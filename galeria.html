@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galeria</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Luxurious+Script&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-title: 'Luxurious Script', cursive;
+            --font-cormorant: 'Cormorant Garamond', serif;
+            --ink-grad: linear-gradient(135deg, #2e2a2a 0%, #585252 45%, #1f1b1b 100%);
+            --pink-btn: linear-gradient(135deg, #d49fa7 0%, #aa757f 48%, #e0b6be 100%);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            font-family: var(--font-cormorant);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: url('images/fondos/F1.png') center / cover no-repeat;
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        .gallery-wrap {
+            width: min(94vw, 860px);
+            margin: 0 auto;
+            padding: 2rem 0 2.8rem;
+            text-align: center;
+        }
+
+        .gallery-title {
+            font-family: var(--font-title);
+            font-size: 3rem;
+            font-weight: 400;
+            line-height: 1;
+            margin-bottom: 1rem;
+            background: var(--ink-grad);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.7rem;
+        }
+
+        .gallery-item {
+            border: 1px solid rgba(161, 119, 133, 0.28);
+            border-radius: 8px;
+            box-shadow: 0 10px 22px rgba(60, 48, 48, 0.14);
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.65);
+            cursor: pointer;
+            transition: transform 0.28s ease, box-shadow 0.28s ease;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 26px rgba(60, 48, 48, 0.18);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            display: block;
+            aspect-ratio: 3 / 4;
+            object-fit: cover;
+        }
+
+        .gallery-mono {
+            width: 112px;
+            height: auto;
+            display: block;
+            margin: 1rem auto 0.8rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(184, 116, 144, 0.62);
+            border-radius: 999px;
+            background: var(--pink-btn);
+            color: #f9e2ea;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            font-size: 0.62rem;
+            font-family: var(--font-cormorant);
+            font-weight: 400;
+            padding: 0.58rem 1.1rem;
+            box-shadow: 0 8px 18px rgba(120, 42, 73, 0.28);
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(23, 18, 18, 0.78);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 1000;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-image {
+            max-width: min(92vw, 760px);
+            max-height: 86vh;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            box-shadow: 0 18px 38px rgba(0, 0, 0, 0.35);
+        }
+
+        .modal-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.16);
+            color: #fff;
+            font-size: 1rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .modal-prev { left: 0.9rem; }
+        .modal-next { right: 0.9rem; }
+
+        .modal-close {
+            position: absolute;
+            top: 0.9rem;
+            right: 0.9rem;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.16);
+            color: #fff;
+            font-size: 1.1rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        @media (max-width: 640px) {
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .gallery-wrap { width: min(90vw, 980px); padding: 2.4rem 0 3rem; }
+            .gallery-title { font-size: 3.7rem; }
+            .gallery-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.9rem; }
+            .gallery-mono { width: 130px; }
+        }
+
+        @media (min-width: 1200px) {
+            .gallery-wrap { width: min(84vw, 1120px); }
+            .gallery-title { font-size: 4rem; }
+        }
+    </style>
+</head>
+<body>
+    <main class="gallery-wrap">
+        <h1 class="gallery-title">Galería</h1>
+
+        <section class="gallery-grid" id="gallery-grid">
+            <button class="gallery-item" type="button"><img src="images/galeria/G1.jpg" alt="Galería 1" loading="lazy"></button>
+            <button class="gallery-item" type="button"><img src="images/galeria/G2.jpg" alt="Galería 2" loading="lazy"></button>
+            <button class="gallery-item" type="button"><img src="images/galeria/G3.jpg" alt="Galería 3" loading="lazy"></button>
+            <button class="gallery-item" type="button"><img src="images/galeria/G4.jpg" alt="Galería 4" loading="lazy"></button>
+            <button class="gallery-item" type="button"><img src="images/galeria/G5.jpg" alt="Galería 5" loading="lazy"></button>
+            <button class="gallery-item" type="button"><img src="images/galeria/G6.jpg" alt="Galería 6" loading="lazy"></button>
+        </section>
+
+        <img class="gallery-mono" src="images/MONO-ROSA.png" alt="Decoracion floral">
+
+        <p>
+            <a class="btn" id="btn-back-home" href="index.html#invitacion">Volver a la Invitación</a>
+        </p>
+    </main>
+
+    <div class="modal" id="gallery-modal" aria-hidden="true">
+        <button class="modal-close" id="modal-close" type="button" aria-label="Cerrar">x</button>
+        <button class="modal-nav modal-prev" id="modal-prev" type="button" aria-label="Anterior">&#10094;</button>
+        <img class="modal-image" id="modal-image" src="" alt="Vista ampliada">
+        <button class="modal-nav modal-next" id="modal-next" type="button" aria-label="Siguiente">&#10095;</button>
+    </div>
+
+    <script src="animations-global.js"></script>
+    <script src="music-global.js"></script>
+    <script>
+        const params = new URLSearchParams(window.location.search || '');
+        const backHomeBtn = document.getElementById('btn-back-home');
+        const q = params.toString();
+        backHomeBtn.href = q ? ('index.html?' + q + '#invitacion') : 'index.html#invitacion';
+
+        const modal = document.getElementById('gallery-modal');
+        const modalImage = document.getElementById('modal-image');
+        const closeBtn = document.getElementById('modal-close');
+        const prevBtn = document.getElementById('modal-prev');
+        const nextBtn = document.getElementById('modal-next');
+        const items = Array.from(document.querySelectorAll('.gallery-item img'));
+        let currentIndex = 0;
+
+        function showByIndex(index) {
+            if (items.length === 0) return;
+            currentIndex = (index + items.length) % items.length;
+            const current = items[currentIndex];
+            modalImage.src = current.src;
+            modalImage.alt = current.alt || 'Vista ampliada';
+        }
+
+        function openModal(index) {
+            showByIndex(index);
+            modal.classList.add('active');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            modal.setAttribute('aria-hidden', 'true');
+            modalImage.src = '';
+            document.body.style.overflow = '';
+        }
+
+        items.forEach(function(img) {
+            const btn = img.closest('.gallery-item');
+            if (!btn) return;
+            btn.addEventListener('click', function() {
+                openModal(items.indexOf(img));
+            });
+        });
+
+        prevBtn.addEventListener('click', function(event) {
+            event.stopPropagation();
+            showByIndex(currentIndex - 1);
+        });
+
+        nextBtn.addEventListener('click', function(event) {
+            event.stopPropagation();
+            showByIndex(currentIndex + 1);
+        });
+
+        closeBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) closeModal();
+        });
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') closeModal();
+            if (!modal.classList.contains('active')) return;
+            if (event.key === 'ArrowLeft') showByIndex(currentIndex - 1);
+            if (event.key === 'ArrowRight') showByIndex(currentIndex + 1);
+        });
+    </script>
+</body>
+</html>

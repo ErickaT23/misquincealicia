@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buenos Deseos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;1,400&family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Luxurious+Script&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-title: 'Luxurious Script', cursive;
+            --font-cormorant: 'Cormorant Garamond', 'Cormorant', serif;
+            --ink-grad: linear-gradient(135deg, #2e2a2a 0%, #585252 45%, #1f1b1b 100%);
+            --pink-btn: linear-gradient(135deg, #d49fa7 0%, #aa757f 48%, #e0b6be 100%);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            font-family: var(--font-cormorant);
+            font-weight: 400;
+            color: #2f2a2a;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: url('images/fondos/F1.png') center / cover no-repeat;
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        .wish-wrap {
+            width: min(92vw, 640px);
+            margin: 0 auto;
+            padding: 2.2rem 0 3rem;
+            text-align: center;
+        }
+
+        .wish-title {
+            font-family: var(--font-title);
+            font-size: 3rem;
+            font-weight: 400;
+            line-height: 1;
+            margin-bottom: 0.6rem;
+            background: var(--ink-grad);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .wish-intro {
+            font-family: var(--font-cormorant);
+            font-style: italic;
+            font-size: 1.1rem;
+            line-height: 1.3;
+            margin-bottom: 1.2rem;
+        }
+
+        .wish-form {
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(170, 120, 137, 0.24);
+            border-radius: 12px;
+            padding: 1rem 0.9rem;
+            box-shadow: 0 10px 24px rgba(70, 54, 54, 0.1);
+            text-align: left;
+        }
+
+        .field { margin-bottom: 0.8rem; }
+
+        label {
+            display: block;
+            font-family: var(--font-cormorant);
+            font-size: 0.95rem;
+            margin-bottom: 0.26rem;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            border: 1px solid rgba(170, 120, 137, 0.35);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.92);
+            color: #2f2a2a;
+            font-family: var(--font-cormorant);
+            font-size: 1rem;
+            font-style: italic;
+            padding: 0.62rem 0.7rem;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(184, 116, 144, 0.62);
+            border-radius: 999px;
+            background: var(--pink-btn);
+            color: #ffffff;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            font-size: 0.62rem;
+            font-family: var(--font-cormorant);
+            font-weight: 400;
+            padding: 0.58rem 1.1rem;
+            box-shadow: 0 8px 18px rgba(120, 42, 73, 0.28);
+            cursor: pointer;
+            transition: background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+        }
+
+        .btn:hover {
+            background: #b86f82;
+            color: #ffffff;
+            box-shadow: 0 10px 20px rgba(120, 42, 73, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .btn-row {
+            margin-top: 0.5rem;
+            display: grid;
+            gap: 0.55rem;
+            justify-items: center;
+        }
+
+        .wish-list-wrap {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .wish-list-wrap.active { display: block; }
+
+        .wish-list {
+            display: grid;
+            gap: 0.55rem;
+            text-align: left;
+        }
+
+        .wish-card {
+            background: rgba(255, 255, 255, 0.78);
+            border: 1px solid rgba(170, 120, 137, 0.22);
+            border-radius: 10px;
+            padding: 0.7rem 0.75rem;
+            box-shadow: 0 8px 18px rgba(70, 54, 54, 0.08);
+        }
+
+        .wish-card-name {
+            font-family: var(--font-cormorant);
+            font-size: 1rem;
+            font-weight: 400;
+            margin-bottom: 0.2rem;
+        }
+
+        .wish-card-text {
+            font-family: var(--font-cormorant);
+            font-style: italic;
+            font-size: 0.97rem;
+            line-height: 1.25;
+        }
+
+        .wish-mono {
+            width: 112px;
+            height: auto;
+            margin: 1rem auto 0.8rem;
+            display: block;
+        }
+
+        .back-row { text-align: center; margin-top: 0.2rem; }
+
+        .form-status {
+            margin-top: 0.55rem;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        @media (min-width: 768px) {
+            .wish-wrap { width: min(88vw, 780px); padding: 2.5rem 0 3.2rem; }
+            .wish-title { font-size: 3.6rem; }
+            .wish-intro { font-size: 1.25rem; margin-bottom: 1.4rem; }
+            .wish-form { padding: 1.2rem 1.1rem; }
+            .wish-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.65rem; }
+            .wish-mono { width: 130px; }
+        }
+
+        @media (min-width: 1200px) {
+            .wish-wrap { width: min(84vw, 900px); }
+            .wish-title { font-size: 3.9rem; }
+        }
+    </style>
+</head>
+<body>
+    <main class="wish-wrap">
+        <h1 class="wish-title">Buenos Deseos</h1>
+        <p class="wish-intro">Déjame un mensaje para que recuerde lo especial que soy para ti, y este día mágico.</p>
+
+        <form id="wish-form" class="wish-form" autocomplete="off">
+            <div class="field">
+                <label for="wish-name">Tu nombre</label>
+                <input id="wish-name" name="name" type="text" required>
+            </div>
+            <div class="field">
+                <label for="wish-message">Tu mensaje</label>
+                <textarea id="wish-message" name="message" required></textarea>
+            </div>
+            <div class="btn-row">
+                <button type="submit" class="btn">Enviar deseo</button>
+                <button type="button" class="btn" id="toggle-wishes">Ver deseos</button>
+            </div>
+            <p class="form-status" id="form-status" aria-live="polite"></p>
+        </form>
+
+        <section class="wish-list-wrap" id="wish-list-wrap" aria-live="polite">
+            <div class="wish-list" id="wish-list"></div>
+        </section>
+
+        <img class="wish-mono" src="images/MONO-ROSA.png" alt="Decoracion floral rosa">
+
+        <p class="back-row">
+            <a class="btn" id="btn-back-home" href="index.html#invitacion">Volver a la Invitación</a>
+        </p>
+    </main>
+
+    <script src="animations-global.js"></script>
+    <script src="music-global.js"></script>
+    <script type="module" src="database.js"></script>
+    <script type="module">
+        const defaultEventId = 'mariana-lucia-2026';
+        const params = new URLSearchParams(window.location.search || '');
+        const eventId = String(params.get('eventId') || defaultEventId).trim() || defaultEventId;
+
+        const form = document.getElementById('wish-form');
+        const backHomeBtn = document.getElementById('btn-back-home');
+        const nameInput = document.getElementById('wish-name');
+        const messageInput = document.getElementById('wish-message');
+        const statusEl = document.getElementById('form-status');
+        const toggleBtn = document.getElementById('toggle-wishes');
+        const listWrap = document.getElementById('wish-list-wrap');
+        const listEl = document.getElementById('wish-list');
+
+        let visible = false;
+        let wishesCache = [];
+
+        (function hydrateBackLink() {
+            if (!backHomeBtn) return;
+            const q = params.toString();
+            backHomeBtn.href = q ? ('index.html?' + q + '#invitacion') : 'index.html#invitacion';
+        })();
+
+        function renderWishes(items) {
+            listEl.replaceChildren();
+            if (!items || items.length === 0) {
+                const empty = document.createElement('p');
+                empty.className = 'wish-card-text';
+                empty.textContent = 'Todavía no hay deseos. Sé la primera persona en dejar uno.';
+                listEl.appendChild(empty);
+                return;
+            }
+
+            items.slice().reverse().forEach(function(item) {
+                const card = document.createElement('article');
+                card.className = 'wish-card';
+
+                const name = document.createElement('p');
+                name.className = 'wish-card-name';
+                name.textContent = String(item && item.nombre || 'Invitado');
+
+                const text = document.createElement('p');
+                text.className = 'wish-card-text';
+                text.textContent = String(item && item.mensaje || '');
+
+                card.appendChild(name);
+                card.appendChild(text);
+                listEl.appendChild(card);
+            });
+        }
+
+        async function loadWishes() {
+            const db = window.RSVPDatabase;
+            if (!db || typeof db.getAllWishes !== 'function') return;
+            wishesCache = await db.getAllWishes(eventId);
+            renderWishes(wishesCache);
+        }
+
+        toggleBtn.addEventListener('click', async function() {
+            visible = !visible;
+            listWrap.classList.toggle('active', visible);
+            toggleBtn.textContent = visible ? 'Ocultar deseos' : 'Ver deseos';
+            if (visible) {
+                await loadWishes();
+            }
+        });
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            statusEl.textContent = '';
+            const nombre = String(nameInput.value || '').trim();
+            const mensaje = String(messageInput.value || '').trim();
+
+            if (!nombre || !mensaje) {
+                statusEl.textContent = 'Por favor, completa tu nombre y mensaje.';
+                return;
+            }
+
+            try {
+                const db = window.RSVPDatabase;
+                if (!db || typeof db.saveWish !== 'function') {
+                    statusEl.textContent = 'No se pudo conectar con la base de datos.';
+                    return;
+                }
+
+                await db.saveWish(eventId, { nombre, mensaje });
+                nameInput.value = '';
+                messageInput.value = '';
+                statusEl.textContent = 'Gracias, tu deseo fue enviado con éxito.';
+
+                if (visible) {
+                    await loadWishes();
+                }
+            } catch (error) {
+                console.error(error);
+                statusEl.textContent = 'Ocurrió un error al guardar tu deseo. Intenta de nuevo.';
+            }
+        });
+
+        setTimeout(function() {
+            if (visible) loadWishes();
+        }, 200);
+    </script>
+</body>
+</html>

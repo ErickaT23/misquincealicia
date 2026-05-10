@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles del Evento</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&family=Luxurious+Script&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-title: 'Luxurious Script', cursive;
+            --font-cormorant: 'Cormorant Garamond', 'Cormorant', serif;
+            --ink-grad: linear-gradient(135deg, #2e2a2a 0%, #585252 45%, #1f1b1b 100%);
+            --pink-btn: linear-gradient(135deg, #d49fa7 0%, #aa757f 48%, #e0b6be 100%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-cormorant);
+            font-weight: 400;
+            color: #2f2a2a;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: url('images/fondos/F1.png') center / cover no-repeat;
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        .detalle-wrap {
+            width: min(92vw, 760px);
+            margin: 0 auto;
+            padding: 2rem 0 3rem;
+        }
+
+        .titulo-principal,
+        .section-title,
+        .itinerario-title,
+        .additional-title,
+        .nombre-destacado {
+            font-family: var(--font-title);
+            font-weight: 400;
+            line-height: 1;
+            text-align: center;
+            background: var(--ink-grad);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .titulo-principal {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .intro-row {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 0.9rem;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .intro-mono {
+            width: 120px;
+            height: auto;
+            justify-self: start;
+        }
+
+        .intro-copy {
+            font-family: var(--font-cormorant);
+            font-size: 1.25rem;
+            font-style: italic;
+            line-height: 1.2;
+        }
+
+        .nombre-destacado {
+            display: block;
+            font-size: 2.1rem;
+            margin-top: 0.2rem;
+            text-align: left;
+        }
+
+        .bloque {
+            text-align: center;
+            margin-top: 1.6rem;
+        }
+
+        .section-title,
+        .itinerario-title,
+        .additional-title {
+            font-size: 2.25rem;
+            margin-bottom: 0.55rem;
+        }
+
+        .subtitulo-strong {
+            font-family: var(--font-cormorant);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 1.15rem;
+            letter-spacing: 0.03em;
+            margin-bottom: 0.18rem;
+        }
+
+        .texto-italica {
+            font-family: var(--font-cormorant);
+            font-style: italic;
+            text-transform: lowercase;
+            font-size: 1.03rem;
+            line-height: 1.3;
+            margin-bottom: 0.7rem;
+        }
+
+        .btn-como-llegar,
+        .btn-regresar {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 0.35rem;
+            padding: 0.58rem 1.1rem;
+            border: 1px solid rgba(184, 116, 144, 0.62);
+            border-radius: 999px;
+            background: var(--pink-btn);
+            color: #f9e2ea;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            font-size: 0.62rem;
+            font-family: var(--font-cormorant);
+            font-weight: 400;
+            box-shadow: 0 8px 18px rgba(120, 42, 73, 0.28);
+            cursor: pointer;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(35, 20, 28, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 40;
+        }
+
+        .modal-overlay.is-open {
+            display: flex;
+        }
+
+        .modal-cuenta {
+            width: min(92vw, 430px);
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(184, 116, 144, 0.34);
+            box-shadow: 0 20px 36px rgba(85, 39, 56, 0.24);
+            padding: 1.2rem 1rem 1rem;
+            text-align: center;
+        }
+
+        .modal-cuenta .section-title {
+            margin-bottom: 0.6rem;
+        }
+
+        .modal-cuenta-datos {
+            font-family: var(--font-cormorant);
+            font-size: 1.02rem;
+            line-height: 1.35;
+            color: #2f2a2a;
+            margin-bottom: 0.8rem;
+        }
+
+        .modal-cuenta-linea {
+            margin-bottom: 0.22rem;
+        }
+
+        .modal-cuenta-acciones {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .modal-feedback {
+            margin-top: 0.55rem;
+            min-height: 1.2rem;
+            font-family: var(--font-cormorant);
+            font-size: 0.92rem;
+            color: #5c3a45;
+        }
+
+        .qr-recuerdos {
+            width: min(72vw, 220px);
+            height: auto;
+            display: block;
+            margin: 0.2rem auto 0.5rem;
+        }
+
+        .dress-row {
+            display: grid;
+            grid-template-columns: 1fr 120px;
+            gap: 0.9rem;
+            align-items: center;
+            margin-top: 1.8rem;
+        }
+
+        .dress-copy {
+            text-align: left;
+        }
+
+        .dress-copy .section-title {
+            text-align: left;
+        }
+
+        .mono-dress {
+            width: 120px;
+            height: auto;
+            justify-self: end;
+        }
+
+        .itinerario-lista {
+            margin-top: 0.3rem;
+            display: grid;
+            gap: 0.22rem;
+        }
+
+        .it-item {
+            font-family: var(--font-cormorant);
+            font-weight: 400;
+            text-transform: uppercase;
+            font-size: 1rem;
+            letter-spacing: 0.02em;
+        }
+
+        .info-adicional {
+            margin-top: 1.8rem;
+            text-align: center;
+        }
+
+        .mono-final {
+            width: 112px;
+            height: auto;
+            display: block;
+            margin: 1.25rem auto 1rem;
+        }
+
+        .btn-regresar {
+            display: inline-flex;
+            margin: 0.35rem auto 0;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .detalle-wrap {
+                width: min(90vw, 980px);
+                padding: 2.4rem 0 3.2rem;
+            }
+
+            .titulo-principal { font-size: 3.7rem; }
+
+            .intro-row {
+                grid-template-columns: 150px 1fr;
+                gap: 1.2rem;
+            }
+
+            .intro-mono { width: 150px; }
+            .mono-dress { width: 150px; }
+
+            .section-title,
+            .itinerario-title,
+            .additional-title { font-size: 2.7rem; }
+
+            .itinerario-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.4rem 1rem; }
+            .mono-final { width: 130px; }
+        }
+
+        @media (min-width: 1200px) {
+            .detalle-wrap { width: min(86vw, 1100px); }
+            .titulo-principal { font-size: 4rem; }
+            .intro-copy { font-size: 1.45rem; }
+            .nombre-destacado { font-size: 2.4rem; }
+        }
+    </style>
+</head>
+<body>
+    <main class="detalle-wrap">
+        <h1 class="titulo-principal">Detalles del Evento</h1>
+
+        <section class="intro-row">
+            <img class="intro-mono" src="images/MONO-ROSA-2.png" alt="Decoracion floral">
+            <div>
+                <p class="intro-copy">Acompáñanos a celebrar a nuestra amada</p>
+                <span class="nombre-destacado">Alicia</span>
+            </div>
+        </section>
+
+        <section class="bloque">
+            <h2 class="section-title">Ceremonia</h2>
+            <p class="subtitulo-strong">Iglesia pendiente</p>
+            <p class="texto-italica">dirección pendiente</p>
+            <p class="texto-italica">horario pendiente</p>
+            <button class="btn-como-llegar" type="button">Cómo llegar</button>
+        </section>
+
+        <section class="bloque">
+            <h2 class="section-title">Recepción</h2>
+            <p class="subtitulo-strong">The Westin Camino Real</p>
+            <p class="texto-italica">salón los lagos</p>
+            <p class="texto-italica">8:00 pm</p>
+            <a class="btn-como-llegar" href="https://maps.app.goo.gl/rNAuivBpvhVXi5j36" target="_blank" rel="noopener noreferrer">Cómo llegar</a>
+        </section>
+
+        <section class="dress-row">
+            <div class="dress-copy">
+                <h2 class="section-title">Código de Vestimenta</h2>
+                <p class="texto-italica">formal, se reserva solo para la quinceañera el color rosado y/o similares.</p>
+            </div>
+            <img class="mono-dress" src="images/MONO-ROSA.png" alt="Decoracion floral rosa">
+        </section>
+
+        <section class="bloque">
+            <h2 class="itinerario-title">Itinerario</h2>
+            <div class="itinerario-lista">
+                <p class="it-item">Misa - 3:00 pm</p>
+                <p class="it-item">Cocktail - 4:00 pm</p>
+                <p class="it-item">Ingreso de la Quinceañera - 4:30 pm</p>
+                <p class="it-item">Vals - 4:40 pm</p>
+                <p class="it-item">Baile Sorpresa - 5:00 pm</p>
+                <p class="it-item">Cena - 5:30 pm</p>
+                <p class="it-item">Fiesta - 6:30 pm</p>
+                <p class="it-item">Pastel - 9:30 pm</p>
+                <p class="it-item">Despedida mágica - 11:00 pm</p>
+            </div>
+        </section>
+
+        <section class="bloque">
+            <h2 class="section-title">Playlist</h2>
+            <p class="texto-italica">me encantaría que me sugieras las canciones que crees que no pueden faltar para que la pasemos increíble</p>
+            <a class="btn-como-llegar" href="https://open.spotify.com/playlist/4WZqdfOjJTqoucre6Qp05k?si=8edde5b25676433f&amp;pt=1cf206ac3c722c3009d87032f211d19f" target="_blank" rel="noopener noreferrer">Ir a playlist</a>
+        </section>
+
+        <section class="bloque">
+            <h2 class="section-title">Regalo</h2>
+            <p class="texto-italica">Tu alegría es lo que hará mi noche inolvidable. Si deseas darme un regalo, el efectivo será muy apreciado en lluvia de sobres el día del evento o bien con una transferencia.</p>
+            <button class="btn-como-llegar" id="btn-cuenta" type="button">Datos de Cuenta</button>
+        </section>
+
+        <section class="bloque">
+            <h2 class="section-title">Hagamos los recuerdos Inolvidables</h2>
+            <img class="qr-recuerdos" src="images/QR-Alicia.png" alt="QR para subir fotos del evento">
+            <p class="texto-italica">Escanea el QR o utiliza el boton para "Subir fotos"</p>
+            <a class="btn-como-llegar" href="https://drive.google.com/drive/folders/1Cq--9CZ1t9KdWHJexPj9fuJFE2fMR4Kt?usp=drive_link" target="_blank" rel="noopener noreferrer">Subir fotos</a>
+        </section>
+
+        <section class="info-adicional">
+            <h2 class="additional-title">Información Adicional</h2>
+            <p class="texto-italica">Hay momentos inolvidables que se atesoran en el corazón para siempre. Por esta razón quiero que compartas conmigo este día tan especial</p>
+        </section>
+
+        <img class="mono-final" src="images/MONO-ROSA-2.png" alt="Decoracion floral final">
+
+        <p class="center">
+            <a class="btn-regresar" id="btn-back-home" href="index.html#invitacion">Volver a la Invitación</a>
+        </p>
+    </main>
+
+    <div class="modal-overlay" id="modal-cuenta" aria-hidden="true">
+        <div class="modal-cuenta" role="dialog" aria-modal="true" aria-labelledby="modal-cuenta-titulo">
+            <h2 class="section-title" id="modal-cuenta-titulo">Datos de Cuenta</h2>
+            <div class="modal-cuenta-datos" id="modal-cuenta-datos" aria-label="Información de cuenta bancaria">
+                <p class="modal-cuenta-linea">Banco Promerica</p>
+                <p class="modal-cuenta-linea">Titular: MARIA ALICIA MARROQUIN HERNANDEZ</p>
+                <p class="modal-cuenta-linea">Tipo: Ahorro</p>
+                <p class="modal-cuenta-linea">Moneda: Quetzales</p>
+                <p class="modal-cuenta-linea">Número: 32626580325889</p>
+            </div>
+            <div class="modal-cuenta-acciones">
+                <button class="btn-como-llegar" id="btn-copiar-cuenta" type="button">Copiar datos</button>
+                <button class="btn-como-llegar" id="btn-cerrar-cuenta" type="button">Cerrar</button>
+            </div>
+            <p class="modal-feedback" id="modal-feedback" aria-live="polite"></p>
+        </div>
+    </div>
+
+    <script src="animations-global.js"></script>
+    <script src="music-global.js"></script>
+    <script>
+        (function () {
+            var btn = document.getElementById('btn-back-home');
+            if (!btn) return;
+            var params = new URLSearchParams(window.location.search || '');
+            var q = params.toString();
+            btn.href = q ? ('index.html?' + q + '#invitacion') : 'index.html#invitacion';
+        })();
+
+        (function () {
+            var openBtn = document.getElementById('btn-cuenta');
+            var modal = document.getElementById('modal-cuenta');
+            var closeBtn = document.getElementById('btn-cerrar-cuenta');
+            var copyBtn = document.getElementById('btn-copiar-cuenta');
+            var feedback = document.getElementById('modal-feedback');
+            var accountText = [
+                'Banco Promerica',
+                'Titular: MARIA ALICIA MARROQUIN HERNANDEZ',
+                'Tipo: Ahorro',
+                'Moneda: Quetzales',
+                'Número: 32626580325889'
+            ].join('\n');
+
+            if (!openBtn || !modal || !closeBtn || !copyBtn || !feedback) return;
+
+            function openModal() {
+                modal.classList.add('is-open');
+                modal.setAttribute('aria-hidden', 'false');
+                feedback.textContent = '';
+            }
+
+            function closeModal() {
+                modal.classList.remove('is-open');
+                modal.setAttribute('aria-hidden', 'true');
+            }
+
+            openBtn.addEventListener('click', openModal);
+            closeBtn.addEventListener('click', closeModal);
+
+            modal.addEventListener('click', function (event) {
+                if (event.target === modal) closeModal();
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+                    closeModal();
+                }
+            });
+
+            copyBtn.addEventListener('click', async function () {
+                try {
+                    await navigator.clipboard.writeText(accountText);
+                    feedback.textContent = 'Datos copiados.';
+                } catch (error) {
+                    feedback.textContent = 'No se pudo copiar automáticamente.';
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

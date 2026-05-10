@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSVP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&family=Luxurious+Script&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-title: 'Luxurious Script', cursive;
+            --font-cormorant: 'Cormorant Garamond', 'Cormorant', serif;
+            --ink-grad: linear-gradient(135deg, #2e2a2a 0%, #585252 45%, #1f1b1b 100%);
+            --pink-btn: linear-gradient(135deg, #d49fa7 0%, #aa757f 48%, #e0b6be 100%);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            min-height: 100vh;
+            font-family: var(--font-cormorant);
+            font-weight: 400;
+            color: #2f2a2a;
+            position: relative;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: url('images/fondos/F1.png') center / cover no-repeat;
+            opacity: 0.5;
+            z-index: -1;
+        }
+        .rsvp-wrap {
+            width: min(92vw, 640px);
+            margin: 0 auto;
+            padding: 2.2rem 0 3rem;
+        }
+        .rsvp-title {
+            font-family: var(--font-title);
+            font-size: 3rem;
+            font-weight: 400;
+            text-align: center;
+            line-height: 1;
+            margin-bottom: 0.85rem;
+            background: var(--ink-grad);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .rsvp-panel {
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(170, 120, 137, 0.24);
+            border-radius: 12px;
+            padding: 1rem 0.9rem;
+            box-shadow: 0 10px 24px rgba(70, 54, 54, 0.1);
+        }
+        .rsvp-intro {
+            font-style: italic;
+            font-size: 1.05rem;
+            margin-bottom: 0.8rem;
+            text-align: center;
+        }
+        .form-group { margin-bottom: 0.85rem; }
+        label, .rsvp-label {
+            display: block;
+            font-size: 0.95rem;
+            margin-bottom: 0.26rem;
+        }
+        input[type='text'], select {
+            width: 100%;
+            border: 1px solid rgba(170, 120, 137, 0.35);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.92);
+            color: #2f2a2a;
+            font-family: var(--font-cormorant);
+            font-size: 1rem;
+            font-style: italic;
+            padding: 0.62rem 0.7rem;
+        }
+        .rsvp-response-group { display: grid; gap: 0.45rem; }
+        .rsvp-radio-option {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.55rem 0.65rem;
+            border: 1px solid rgba(170, 120, 137, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.85);
+        }
+        .rsvp-radio-option span { font-size: 0.95rem; }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(184, 116, 144, 0.62);
+            border-radius: 999px;
+            background: var(--pink-btn);
+            color: #f9e2ea;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            font-size: 0.62rem;
+            font-family: var(--font-cormorant);
+            font-weight: 400;
+            padding: 0.58rem 1.1rem;
+            box-shadow: 0 8px 18px rgba(120, 42, 73, 0.28);
+            cursor: pointer;
+        }
+        .btn-row { margin-top: 0.35rem; display: flex; gap: 0.6rem; flex-wrap: wrap; }
+        .btn-row { justify-content: center; }
+        .rsvp-success {
+            margin-top: 0.9rem;
+            padding: 0.7rem;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.74);
+            border: 1px solid rgba(170, 120, 137, 0.24);
+            font-style: italic;
+            text-align: center;
+        }
+        .status { margin-top: 0.5rem; font-size: 0.9rem; font-style: italic; }
+        .rsvp-mono {
+            width: 110px;
+            height: auto;
+            display: block;
+            margin: 1rem auto 0.7rem;
+        }
+        .back-row {
+            text-align: center;
+            margin-top: 0.2rem;
+        }
+
+        @media (min-width: 768px) {
+            .rsvp-wrap { width: min(88vw, 760px); padding: 2.5rem 0 3.2rem; }
+            .rsvp-title { font-size: 3.7rem; }
+            .rsvp-panel { padding: 1.2rem 1.1rem; }
+            .rsvp-intro { font-size: 1.2rem; }
+            .rsvp-mono { width: 130px; }
+        }
+
+        @media (min-width: 1200px) {
+            .rsvp-wrap { width: min(84vw, 840px); }
+            .rsvp-title { font-size: 4rem; }
+        }
+    </style>
+</head>
+<body>
+    <main class="rsvp-wrap">
+        <h1 class="rsvp-title">Confirma tu Asistencia</h1>
+
+        <section class="rsvp-panel">
+            <p class="rsvp-intro">Me encantará compartir este día tan especial contigo. Por favor, confirma tu asistencia.</p>
+
+            <form id="rsvp-form" novalidate>
+                <div class="form-group">
+                    <label for="rsvp-name">Nombre del invitado</label>
+                    <input type="text" id="rsvp-name" name="name" readonly>
+                </div>
+
+                <div class="form-group">
+                    <p class="rsvp-label">Asistirás</p>
+                    <div class="rsvp-response-group">
+                        <label class="rsvp-radio-option" for="rsvp-response-yes">
+                            <input type="radio" id="rsvp-response-yes" name="attendance" value="si">
+                            <span>Sí, con mucho gusto</span>
+                        </label>
+                        <label class="rsvp-radio-option" for="rsvp-response-no">
+                            <input type="radio" id="rsvp-response-no" name="attendance" value="no">
+                            <span>No, lamentablemente no podré asistir</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group" id="guest-count-wrapper" style="display:none;">
+                    <label for="guest-count">Número de invitados</label>
+                    <select id="guest-count" name="guests"></select>
+                </div>
+
+                <div class="btn-row">
+                    <button type="submit" class="btn" id="rsvp-submit">Confirmar asistencia</button>
+                </div>
+                <p id="rsvp-status" class="status" aria-live="polite"></p>
+            </form>
+
+            <div id="rsvp-success" class="rsvp-success" style="display:none;">
+                <p id="rsvp-final-message"></p>
+            </div>
+
+        </section>
+
+        <img class="rsvp-mono" src="images/MONO-ROSA-2.png" alt="Decoracion floral rosa">
+
+        <p class="back-row">
+            <a class="btn" id="btn-back-home" href="index.html#invitacion">Volver a la Invitación</a>
+        </p>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="animations-global.js"></script>
+    <script src="music-global.js"></script>
+    <script type="module">
+        import './database.js';
+
+        const GuestConfig = {
+            invitados: {
+                '1': { nombre: 'Maria Lopez', pases: 2 },
+                '2': { nombre: 'Carlos Mendez', pases: 4 },
+                '3': { nombre: 'Andrea Ruiz', pases: 1 },
+                '4': { nombre: 'Familia Garcia', pases: 6 },
+                '5': { nombre: 'Pedro Sanchez', pases: 2 }
+            },
+            invitadoDefault: { nombre: 'Invitado Especial', pases: 2 },
+            paramId: 'id'
+        };
+
+        const params = new URLSearchParams(window.location.search || '');
+        const rawGuestId = String(params.get(GuestConfig.paramId) || '').trim();
+        const guestId = rawGuestId || 'default';
+
+        const externalConfig = window.config || {};
+        const eventConfig = externalConfig.event || {};
+        const eventIdParam = String(eventConfig.eventIdParam || 'eventId').trim() || 'eventId';
+        const defaultEventId = String(eventConfig.defaultEventId || 'mariana-lucia-2026').trim() || 'mariana-lucia-2026';
+        const eventId = String(params.get(eventIdParam) || '').trim() || defaultEventId;
+        const backHomeBtn = document.getElementById('btn-back-home');
+
+        (function hydrateBackLink() {
+            if (!backHomeBtn) return;
+            const q = params.toString();
+            backHomeBtn.href = q ? ('index.html?' + q + '#invitacion') : 'index.html#invitacion';
+        })();
+
+        const form = document.getElementById('rsvp-form');
+        const nameInput = document.getElementById('rsvp-name');
+        const yesInput = document.getElementById('rsvp-response-yes');
+        const noInput = document.getElementById('rsvp-response-no');
+        const guestWrapper = document.getElementById('guest-count-wrapper');
+        const guestSelect = document.getElementById('guest-count');
+        const submitBtn = document.getElementById('rsvp-submit');
+        const statusEl = document.getElementById('rsvp-status');
+        const successBox = document.getElementById('rsvp-success');
+        const finalMessage = document.getElementById('rsvp-final-message');
+
+        let guestData = { id: guestId, nombre: GuestConfig.invitadoDefault.nombre, pases: GuestConfig.invitadoDefault.pases, activo: true };
+
+        function fillGuestOptions(totalPases) {
+            guestSelect.replaceChildren();
+            for (let i = 1; i <= totalPases; i += 1) {
+                const option = document.createElement('option');
+                option.value = String(i);
+                option.textContent = i === 1 ? '1 invitado' : i + ' invitados';
+                guestSelect.appendChild(option);
+            }
+            guestSelect.value = String(totalPases);
+        }
+
+        function toggleGuestCount() {
+            const yes = yesInput.checked;
+            guestWrapper.style.display = yes ? '' : 'none';
+            guestSelect.disabled = !yes;
+        }
+
+        function lockWithMessage(record) {
+            const respuesta = String(record && record.respuesta || '').toLowerCase() === 'si' ? 'si' : 'no';
+            const message = respuesta === 'si'
+                ? 'Gracias por confirmar tu asistencia. Te vemos pronto.'
+                : 'Lamentamos que no puedas acompañarnos, te extrañaremos.';
+
+            form.style.display = 'none';
+            form.setAttribute('aria-hidden', 'true');
+            successBox.style.display = 'block';
+            finalMessage.textContent = message;
+        }
+
+        async function resolveGuestData() {
+            const local = GuestConfig.invitados[rawGuestId];
+            if (local) {
+                guestData = {
+                    id: guestId,
+                    nombre: String(local.nombre || ''),
+                    pases: Math.max(1, Number(local.pases) || 1),
+                    activo: true
+                };
+            }
+
+            const db = window.RSVPDatabase;
+            if (db && typeof db.getInvitadoById === 'function') {
+                try {
+                    const remote = await db.getInvitadoById(eventId, guestId);
+                    if (remote && typeof remote === 'object') {
+                        guestData = {
+                            id: String(remote.id || guestId),
+                            nombre: String(remote.nombre || '').trim() || guestData.nombre,
+                            pases: Math.max(1, Number(remote.pases) || guestData.pases),
+                            activo: typeof remote.activo === 'undefined' ? true : Boolean(remote.activo)
+                        };
+                    }
+                } catch (error) {
+                    console.warn('No se pudo cargar invitado remoto:', error);
+                }
+            }
+        }
+
+        async function checkExisting() {
+            const db = window.RSVPDatabase;
+            if (!db || typeof db.getConfirmationByGuestId !== 'function') return;
+            try {
+                const existing = await db.getConfirmationByGuestId(eventId, guestData.id);
+                if (existing && existing.confirmado) {
+                    lockWithMessage(existing);
+                }
+            } catch (error) {
+                console.error('No se pudo verificar confirmacion existente:', error);
+            }
+        }
+
+        yesInput.addEventListener('change', toggleGuestCount);
+        noInput.addEventListener('change', toggleGuestCount);
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            statusEl.textContent = '';
+
+            const respuesta = yesInput.checked ? 'si' : (noInput.checked ? 'no' : '');
+            if (!respuesta) {
+                statusEl.textContent = 'Por favor selecciona si asistirás.';
+                return;
+            }
+
+            const cantidadConfirmada = respuesta === 'si'
+                ? Math.max(1, Number(guestSelect.value || 1))
+                : 0;
+
+            const payload = {
+                id: guestData.id,
+                nombre: String(guestData.nombre || ''),
+                pasesAsignados: Math.max(1, Number(guestData.pases) || 1),
+                respuesta,
+                cantidadConfirmada,
+                confirmado: true,
+                fechaConfirmacion: Date.now()
+            };
+
+            const db = window.RSVPDatabase;
+            if (!db || typeof db.saveConfirmation !== 'function') {
+                statusEl.textContent = 'No se pudo conectar con la base de datos.';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            try {
+                const saved = await db.saveConfirmation(eventId, payload);
+                lockWithMessage(saved);
+            } catch (error) {
+                console.error('Error al guardar RSVP:', error);
+                statusEl.textContent = 'No pudimos guardar tu confirmación. Intenta nuevamente.';
+                submitBtn.disabled = false;
+            }
+        });
+
+        await resolveGuestData();
+        nameInput.value = guestData.nombre;
+        fillGuestOptions(Math.max(1, Number(guestData.pases) || 1));
+        toggleGuestCount();
+        await checkExisting();
+    </script>
+</body>
+</html>
