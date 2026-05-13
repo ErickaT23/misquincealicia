@@ -18,7 +18,7 @@ const externalConfig = window.config || {};
 function resolveEventId() {
     const eventConfig = externalConfig.event || {};
     const eventIdParam = String(eventConfig.eventIdParam || 'eventId').trim() || 'eventId';
-    const defaultEventId = String(eventConfig.defaultEventId || 'mariana-lucia-2026').trim() || 'mariana-lucia-2026';
+    const defaultEventId = String(eventConfig.defaultEventId || 'alicia-2026').trim() || 'alicia-2026';
     const params = new URLSearchParams(window.location.search || '');
     const paramValue = String(params.get(eventIdParam) || '').trim();
     const eventId = paramValue || defaultEventId;
@@ -92,16 +92,16 @@ function createSiteConfig(remoteConfig) {
 
     return {
         seo: {
-            titulo: 'Mariana Lucia | Quinceañera 2026',
-            descripcion: 'Quinceañera de Mariana Lucia - 14 de Junio 2026',
+            titulo: 'Alicia | Quinceañera 2026',
+            descripcion: 'Quinceañera de Alicia - 5 de Junio 2026',
             autor: 'Two Design',
             ...externalConfig.seo,
             ...normalizedRemoteConfig.seo
         },
         pareja: {
-            nombres: 'Mariana Lucia',
-            fecha: '14-06-2026',
-            fechaVisible: '14 · 06 · 2026',
+            nombres: 'Alicia',
+            fecha: '05-06-2026',
+            fechaVisible: '05 · 06 · 2026',
             ...externalConfig.pareja,
             ...normalizedRemoteConfig.pareja
         },
@@ -138,10 +138,10 @@ function createSiteConfig(remoteConfig) {
             ...normalizedRemoteConfig.textos
         },
         footer: {
-            hashtag: '#RocioFernandoBoda',
-            instagramUrl: 'https://instagram.com/rocio.fernando.boda',
-            facebookUrl: 'https://facebook.com/rociofernandoboda',
-            marcaTexto: 'Diseno',
+            hashtag: '#Alicia2026',
+            instagramUrl: 'https://instagram.com/thetwodesign',
+            facebookUrl: 'https://facebook.com/thetwodesign',
+            marcaTexto: 'Diseño',
             marcaNombre: 'Two Design',
             marcaUrl: 'https://twodesign.com',
             ...externalConfig.footer,
@@ -287,11 +287,31 @@ function applyFooterConfig() {
 // ============================================
 const GuestConfig = {
     invitados: {
-        "1": { nombre: "María López", pases: 2 },
-        "2": { nombre: "Carlos Méndez", pases: 4 },
-        "3": { nombre: "Andrea Ruiz", pases: 1 },
-        "4": { nombre: "Familia García", pases: 6 },
-        "5": { nombre: "Pedro Sánchez", pases: 2 }
+        "1": { nombre: "María Alicia Turcios de Marroquín", pases: 1 },
+        "2": { nombre: "José Ovidio y Sra.", pases: 2 },
+        "3": { nombre: "Jorge Alberto y Familia", pases: 3 },
+        "4": { nombre: "Jorge Alberto Paiz y Familia", pases: 4 },
+        "5": { nombre: "Lourdes Paiz e Hijo", pases: 2 },
+        "6": { nombre: "Jose Benjamin Arteaga y Sra.", pases: 2 },
+        "7": { nombre: "Lorena Isabel Salguero", pases: 1 },
+        "8": { nombre: "Maria del Rosario Salguero", pases: 1 },
+        "9": { nombre: "Maria José Henríquez", pases: 1 },
+        "10": { nombre: "Joel Saravia y familia", pases: 4 },
+        "11": { nombre: "Jose Francisco Salguero", pases: 1 },
+        "12": { nombre: "Rolando Samuel Díaz", pases: 1 },
+        "13": { nombre: "Veronica Vivar", pases: 1 },
+        "14": { nombre: "Yiomara Romero", pases: 1 },
+        "15": { nombre: "Amira Carrillo", pases: 1 },
+        "16": { nombre: "Yuri Leal", pases: 1 },
+        "17": { nombre: "Harry Leal", pases: 1 },
+        "18": { nombre: "Jorge Leal e hija", pases: 2 },
+        "19": { nombre: "Edgar Sologaistoa y Sra.", pases: 2 },
+        "20": { nombre: "Olga Mendizabal", pases: 4 },
+        "21": { nombre: "Julio Salguero y Sra", pases: 2 },
+        "22": { nombre: "Jose Carlo Rivas", pases: 1 },
+        "23": { nombre: "Josseline Rodríguez", pases: 1 },
+        "24": { nombre: "Kelvin Gerardo Anaya Lopez", pases: 1 },
+        "G50": { nombre: "Invitación grupal abierta", pases: 1, tipo: "grupo", solicitaNombre: true, pasesDisponibles: 50 }
     },
     invitadoDefault: { nombre: "Invitado Especial", pases: 2 },
     paramId: 'id'
@@ -325,7 +345,9 @@ const InvitadoApp = {
                 id: safeId,
                 nombre: String(invitado.nombre || ''),
                 pases: Math.max(1, Number(invitado.pases) || 1),
-                activo: true
+                activo: true,
+                tipo: String(invitado.tipo || 'individual').trim().toLowerCase(),
+                solicitaNombre: Boolean(invitado.solicitaNombre)
             };
         }
 
@@ -333,7 +355,9 @@ const InvitadoApp = {
             id: safeId,
             nombre: String(GuestConfig.invitadoDefault.nombre || ''),
             pases: Math.max(1, Number(GuestConfig.invitadoDefault.pases) || 1),
-            activo: true
+            activo: true,
+            tipo: 'individual',
+            solicitaNombre: false
         };
     },
 
@@ -350,7 +374,9 @@ const InvitadoApp = {
                 id: String(remoteGuest.id || guestId || 'default'),
                 nombre: String(remoteGuest.nombre || '').trim() || String(GuestConfig.invitadoDefault.nombre || ''),
                 pases: Math.max(1, Number(remoteGuest.pases) || Number(GuestConfig.invitadoDefault.pases) || 1),
-                activo: typeof remoteGuest.activo === 'undefined' ? true : Boolean(remoteGuest.activo)
+                activo: typeof remoteGuest.activo === 'undefined' ? true : Boolean(remoteGuest.activo),
+                tipo: String(remoteGuest.tipo || 'individual').trim().toLowerCase(),
+                solicitaNombre: Boolean(remoteGuest.solicitaNombre)
             };
         } catch (error) {
             console.warn('No se pudo cargar invitado remoto. Se usará fallback local:', error);
@@ -361,9 +387,24 @@ const InvitadoApp = {
     renderSection() {
         const nombreEl = document.getElementById('nombre-invitado');
         const portadaNombreEl = document.getElementById('portada-nombre-invitado');
+        const portadaSobreEl = document.getElementById('sobre-abrir');
+        const isGroupOpenLink = this.data && String(this.data.id || '').trim().toUpperCase() === 'G50';
+        const shouldHideName = Boolean(isGroupOpenLink);
 
-        if (nombreEl) nombreEl.textContent = this.data.nombre;
-        if (portadaNombreEl) portadaNombreEl.textContent = this.data.nombre;
+        if (nombreEl) nombreEl.textContent = shouldHideName ? '' : this.data.nombre;
+        if (portadaNombreEl) {
+            if (shouldHideName) {
+                portadaNombreEl.style.display = 'none';
+                portadaNombreEl.setAttribute('aria-hidden', 'true');
+            } else {
+                portadaNombreEl.style.display = '';
+                portadaNombreEl.removeAttribute('aria-hidden');
+                portadaNombreEl.textContent = this.data.nombre;
+            }
+        }
+        if (portadaSobreEl) {
+            portadaSobreEl.classList.toggle('is-group-open', shouldHideName);
+        }
         this.renderPasesText(this.data.pases);
     },
 
@@ -380,13 +421,16 @@ const InvitadoApp = {
         }
 
         const parts = template.split('{pases}');
+        const suffixText = pases === 1
+            ? String(parts[1] || '').replace(/lugares/i, 'lugar')
+            : String(parts[1] || '');
         const numeroEl = document.createElement('span');
         numeroEl.id = 'numero-lugares';
         numeroEl.textContent = String(pases);
 
         const textoEl = document.createElement('span');
         textoEl.id = 'texto-lugares';
-        textoEl.textContent = parts[1] || '';
+        textoEl.textContent = suffixText;
 
         lugaresEl.replaceChildren(
             document.createTextNode(parts[0] || ''),

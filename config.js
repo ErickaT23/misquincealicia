@@ -1,6 +1,6 @@
 const config = {
     event: {
-        defaultEventId: "mariana-lucia-2026",
+        defaultEventId: "alicia-2026",
         eventIdParam: "eventId",
         legacyFallback: {
             read: false,
@@ -10,15 +10,15 @@ const config = {
     },
 
     seo: {
-        titulo: "Mariana Lucia | Quinceañera 2026",
-        descripcion: "Quinceañera de Mariana Lucia - 14 de Junio 2026",
+        titulo: "Alicia | Quinceañera 2026",
+        descripcion: "Quinceañera de Alicia - 5 de Junio 2026",
         autor: "Two Design"
     },
 
     pareja: {
         nombres: "Alicia",
-        fecha: "14-06-2026",
-        fechaVisible: "14 · 06 · 2026"
+        fecha: "05-06-2026",
+        fechaVisible: "05 · 06 · 2026"
     },
 
     musica: {
@@ -49,10 +49,10 @@ const config = {
     },
 
     footer: {
-        hashtag: "#MarianaLucia2026",
+        hashtag: "#Alicia2026",
         instagramUrl: "https://instagram.com/thetwodesign",
         facebookUrl: "https://facebook.com/thetwodesign",
-        marcaTexto: "Diseno",
+        marcaTexto: "Diseño",
         marcaNombre: "Two Design",
         marcaUrl: "https://twodesign.com"
     }

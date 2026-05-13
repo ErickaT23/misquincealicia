@@ -2,6 +2,41 @@
     const ADMIN_KEY = "TD-ADMIN-2026";
     const BASE_URL = window.location.origin;
     const INCLUDE_INACTIVE_IN_BULK_COPY = false;
+    const LOCAL_GUEST_SEEDS = {
+        "alicia-2026": {
+            "1": { nombre: "María Alicia Turcios de Marroquín", pases: 1 },
+            "2": { nombre: "José Ovidio y Sra.", pases: 2 },
+            "3": { nombre: "Jorge Alberto y Familia", pases: 3 },
+            "4": { nombre: "Jorge Alberto Paiz y Familia", pases: 4 },
+            "5": { nombre: "Lourdes Paiz e Hijo", pases: 2 },
+            "6": { nombre: "Jose Benjamin Arteaga y Sra.", pases: 2 },
+            "7": { nombre: "Lorena Isabel Salguero", pases: 1 },
+            "8": { nombre: "Maria del Rosario Salguero", pases: 1 },
+            "9": { nombre: "Maria José Henríquez", pases: 1 },
+            "10": { nombre: "Joel Saravia y familia", pases: 4 },
+            "11": { nombre: "Jose Francisco Salguero", pases: 1 },
+            "12": { nombre: "Rolando Samuel Díaz", pases: 1 },
+            "13": { nombre: "Veronica Vivar", pases: 1 },
+            "14": { nombre: "Yiomara Romero", pases: 1 },
+            "15": { nombre: "Amira Carrillo", pases: 1 },
+            "16": { nombre: "Yuri Leal", pases: 1 },
+            "17": { nombre: "Harry Leal", pases: 1 },
+            "18": { nombre: "Jorge Leal e hija", pases: 2 },
+            "19": { nombre: "Edgar Sologaistoa y Sra.", pases: 2 },
+            "20": { nombre: "Olga Mendizabal", pases: 4 },
+            "21": { nombre: "Julio Salguero y Sra", pases: 2 },
+            "22": { nombre: "Jose Carlo Rivas", pases: 1 },
+            "23": { nombre: "Josseline Rodríguez", pases: 1 },
+            "24": { nombre: "Kelvin Gerardo Anaya Lopez", pases: 1 },
+            "G50": {
+                nombre: "Invitación grupal abierta",
+                pases: 50,
+                tipo: "grupo",
+                solicitaNombre: true,
+                pasesDisponibles: 50
+            }
+        }
+    };
 
     const state = {
         eventId: "",
@@ -33,10 +68,10 @@
             window.config
             && window.config.event
             && window.config.event.defaultEventId
-            || "mariana-lucia-2026"
-        ).trim();
+            || "alicia-2026"
+        ).trim().toLowerCase();
 
-        return queryEventId || defaultEventId;
+        return String(queryEventId || defaultEventId || "alicia-2026").trim().toLowerCase();
     }
 
     function showRestricted() {
@@ -397,7 +432,9 @@
         state.editDraft = {
             nombre: String(row.nombre || "").trim(),
             pases: Math.max(1, Number(row.pasesAsignados) || 1),
-            activo: row.activo !== false
+            activo: row.activo !== false,
+            respuesta: String(row.respuesta || "pendiente").trim().toLowerCase(),
+            cantidadConfirmada: Math.max(0, Number(row.cantidadConfirmada) || 0)
         };
         refreshView();
     }
@@ -409,7 +446,7 @@
     }
 
     async function saveInlineEdit(row) {
-        if (!state.db || typeof state.db.updateInvitado !== "function") {
+        if (!state.db || typeof state.db.updateInvitado !== "function" || typeof state.db.upsertConfirmationByAdmin !== "function" || typeof state.db.upsertGroupConfirmationByAdmin !== "function") {
             setStatus("No se pudo inicializar la edición de invitados.", true);
             return;
         }
@@ -418,6 +455,12 @@
         const nombre = String(draft.nombre || "").trim();
         const pases = Number(draft.pases);
         const activo = Boolean(draft.activo);
+        const respuestaDraft = String(draft.respuesta || "pendiente").trim().toLowerCase();
+        const respuesta = respuestaDraft === "si" || respuestaDraft === "no" ? respuestaDraft : "pendiente";
+        const cantidadConfirmadaDraft = Math.max(0, Number(draft.cantidadConfirmada) || 0);
+        const cantidadConfirmada = respuesta === "si"
+            ? Math.max(1, Math.min(cantidadConfirmadaDraft || pases, pases))
+            : 0;
 
         if (!nombre) {
             setStatus("El nombre es obligatorio para guardar cambios.", true);
@@ -430,12 +473,33 @@
         }
 
         try {
-            await state.db.updateInvitado(state.eventId, row.id, {
-                id: row.id,
-                nombre,
-                pases,
-                activo
-            });
+            if (row.isGroupResponse) {
+                await state.db.upsertGroupConfirmationByAdmin(state.eventId, {
+                    groupId: String(row.groupId || "").trim(),
+                    responseId: String(row.responseId || "").trim(),
+                    nombre,
+                    respuesta,
+                    fechaConfirmacion: row.fechaConfirmacion || Date.now()
+                });
+            } else {
+                await state.db.updateInvitado(state.eventId, row.id, {
+                    id: row.id,
+                    nombre,
+                    pases,
+                    activo
+                });
+
+                if (respuesta === "si" || respuesta === "no") {
+                    await state.db.upsertConfirmationByAdmin(state.eventId, {
+                        id: row.id,
+                        nombre,
+                        pasesAsignados: pases,
+                        respuesta,
+                        cantidadConfirmada,
+                        fechaConfirmacion: row.fechaConfirmacion || Date.now()
+                    });
+                }
+            }
 
             state.editingGuestId = null;
             state.editDraft = null;
@@ -655,6 +719,16 @@
 
         confirmationsByGuest.forEach(function (confirmation, id) {
             if (state.invitadosMap.has(id)) return;
+            if (confirmation.isGroupResponse) {
+                rows.push({
+                    ...confirmation,
+                    activo: true,
+                    canEdit: true,
+                    canReactivate: false,
+                    pasesAsignados: 1
+                });
+                return;
+            }
             rows.push({
                 ...confirmation,
                 activo: false,
@@ -755,7 +829,7 @@
             return { text: "Confirmado", className: "status-badge status-badge--yes" };
         }
         if (response === "no") {
-            return { text: "No asistira", className: "status-badge status-badge--no" };
+            return { text: "No asistirá", className: "status-badge status-badge--no" };
         }
         return { text: "Pendiente", className: "status-badge status-badge--pending" };
     }
@@ -772,14 +846,16 @@
             if (isEditing) {
                 const checkWrap = document.createElement("label");
                 checkWrap.className = "row-check";
-                const activeInput = document.createElement("input");
-                activeInput.type = "checkbox";
-                activeInput.checked = draft.activo !== false;
-                activeInput.addEventListener("change", function () {
-                    if (!state.editDraft) return;
-                    state.editDraft.activo = activeInput.checked;
-                });
-                checkWrap.append(activeInput, document.createTextNode("Activo"));
+                if (!row.isGroupResponse) {
+                    const activeInput = document.createElement("input");
+                    activeInput.type = "checkbox";
+                    activeInput.checked = draft.activo !== false;
+                    activeInput.addEventListener("change", function () {
+                        if (!state.editDraft) return;
+                        state.editDraft.activo = activeInput.checked;
+                    });
+                    checkWrap.append(activeInput, document.createTextNode("Activo"));
+                }
 
                 const saveBtn = document.createElement("button");
                 saveBtn.type = "button";
@@ -797,7 +873,23 @@
                     cancelInlineEdit();
                 });
 
-                actionsWrap.append(checkWrap, saveBtn, cancelBtn);
+                if (!row.isGroupResponse) {
+                    actionsWrap.append(checkWrap, saveBtn, cancelBtn);
+                } else {
+                    actionsWrap.append(saveBtn, cancelBtn);
+                }
+                return actionsWrap;
+            }
+
+            if (row.isGroupResponse) {
+                const editBtn = document.createElement("button");
+                editBtn.type = "button";
+                editBtn.className = "btn-mini";
+                editBtn.textContent = "Editar";
+                editBtn.addEventListener("click", function () {
+                    beginInlineEdit(row);
+                });
+                actionsWrap.append(editBtn);
                 return actionsWrap;
             }
 
@@ -959,17 +1051,68 @@
 
             const tdEstado = document.createElement("td");
             tdEstado.className = "status-col";
-            const badgeMeta = getStatusBadgeMeta(row.respuesta);
-            const statusBadge = document.createElement("span");
-            statusBadge.className = badgeMeta.className;
-            statusBadge.textContent = badgeMeta.text;
-            tdEstado.appendChild(statusBadge);
+            if (isEditing) {
+                const responseSelect = document.createElement("select");
+                responseSelect.className = "inline-input";
+                [
+                    { value: "pendiente", label: "Pendiente" },
+                    { value: "si", label: "Confirmado" },
+                    { value: "no", label: "No asistirá" }
+                ].forEach(function (opt) {
+                    const option = document.createElement("option");
+                    option.value = opt.value;
+                    option.textContent = opt.label;
+                    responseSelect.appendChild(option);
+                });
+                responseSelect.value = String(draft.respuesta || row.respuesta || "pendiente");
+                responseSelect.addEventListener("change", function () {
+                    if (!state.editDraft) return;
+                    state.editDraft.respuesta = responseSelect.value;
+                    if (responseSelect.value !== "si") {
+                        state.editDraft.cantidadConfirmada = 0;
+                    } else if (!state.editDraft.cantidadConfirmada) {
+                        state.editDraft.cantidadConfirmada = Math.max(1, Number(state.editDraft.pases) || 1);
+                    }
+                    refreshView();
+                });
+                tdEstado.appendChild(responseSelect);
+            } else {
+                const badgeMeta = getStatusBadgeMeta(row.respuesta);
+                const statusBadge = document.createElement("span");
+                statusBadge.className = badgeMeta.className;
+                statusBadge.textContent = badgeMeta.text;
+                tdEstado.appendChild(statusBadge);
+            }
 
             const tdConfirmados = document.createElement("td");
             tdConfirmados.className = "confirmed-col";
-            tdConfirmados.textContent = row.respuesta === "si"
-                ? String(Number(row.cantidadConfirmada) || 0)
-                : (row.respuesta === "no" ? "0" : "--");
+            if (isEditing) {
+                const draftRespuesta = String(draft.respuesta || "pendiente");
+                if (draftRespuesta === "si") {
+                    const confirmedInput = document.createElement("input");
+                    confirmedInput.type = "number";
+                    confirmedInput.className = "inline-input";
+                    confirmedInput.min = "1";
+                    confirmedInput.step = "1";
+                    confirmedInput.max = String(Math.max(1, Number(draft.pases) || 1));
+                    confirmedInput.value = String(Math.max(1, Math.min(Number(draft.cantidadConfirmada) || Number(draft.pases) || 1, Number(draft.pases) || 1)));
+                    confirmedInput.addEventListener("input", function () {
+                        if (!state.editDraft) return;
+                        const max = Math.max(1, Number(state.editDraft.pases) || 1);
+                        const raw = Number(confirmedInput.value);
+                        state.editDraft.cantidadConfirmada = Math.max(1, Math.min(Number.isFinite(raw) ? raw : 1, max));
+                    });
+                    tdConfirmados.appendChild(confirmedInput);
+                } else if (draftRespuesta === "no") {
+                    tdConfirmados.textContent = "0";
+                } else {
+                    tdConfirmados.textContent = "--";
+                }
+            } else {
+                tdConfirmados.textContent = row.respuesta === "si"
+                    ? String(Number(row.cantidadConfirmada) || 0)
+                    : (row.respuesta === "no" ? "0" : "--");
+            }
 
             const tdFecha = document.createElement("td");
             tdFecha.className = "date-cell date-col";
@@ -1221,6 +1364,82 @@
         }
     }
 
+    async function ensureSeedGuests(db, eventId) {
+        const normalizedEventId = String(eventId || "").trim().toLowerCase();
+        const seedByEvent = LOCAL_GUEST_SEEDS[normalizedEventId] || LOCAL_GUEST_SEEDS["alicia-2026"];
+        if (!seedByEvent || typeof seedByEvent !== "object") {
+            return { inserted: 0, total: 0, eventId: normalizedEventId };
+        }
+
+        const existing = await db.getInvitados(eventId);
+        const existingIds = new Set((Array.isArray(existing) ? existing : []).map(function (item) {
+            return String((item && (item.id || item._key)) || "").trim();
+        }).filter(Boolean));
+
+        const entries = Object.entries(seedByEvent);
+        let inserted = 0;
+
+        for (let i = 0; i < entries.length; i += 1) {
+            const pair = entries[i];
+            const id = String(pair[0] || "").trim();
+            const guest = pair[1] || {};
+            if (!id || existingIds.has(id)) continue;
+
+            await db.createInvitado(eventId, {
+                id,
+                nombre: String(guest.nombre || "Invitado").trim() || "Invitado",
+                pases: Math.max(1, Number(guest.pases) || 1),
+                activo: true,
+                tipo: String(guest.tipo || "individual").trim().toLowerCase(),
+                solicitaNombre: Boolean(guest.solicitaNombre),
+                pasesDisponibles: Math.max(0, Number(guest.pasesDisponibles || guest.pases || 0))
+            });
+            inserted += 1;
+        }
+
+        return { inserted, total: entries.length, eventId: normalizedEventId };
+    }
+
+    async function ensureEventConfigSeed(db, eventId) {
+        if (!db || typeof db.seedEventConfigToFirebase !== "function") {
+            return { ok: false, skipped: true, reason: "seed-api-unavailable" };
+        }
+
+        try {
+            return await db.seedEventConfigToFirebase(eventId, { force: false });
+        } catch (error) {
+            console.error("Error al sembrar config del evento:", error);
+            return { ok: false, skipped: true, reason: "seed-failed" };
+        }
+    }
+
+    async function syncSeedGuestsFromButton() {
+        if (!state.db) {
+            setStatus("Base de datos no disponible.", true);
+            return;
+        }
+
+        const syncBtn = getEl("btn-sync-seed");
+        if (syncBtn) syncBtn.disabled = true;
+        setStatus("Sincronizando lista base de invitados...", false);
+
+        try {
+            const result = await ensureSeedGuests(state.db, state.eventId);
+            if (result.inserted > 0) {
+                setStatus("Sincronización completada. Se agregaron " + result.inserted + " invitados.", false);
+            } else if (result.total > 0) {
+                setStatus("La lista base ya estaba completa. No hubo cambios.", false);
+            } else {
+                setStatus("No hay lista base configurada para el evento: " + (result.eventId || state.eventId || "--"), true);
+            }
+        } catch (error) {
+            console.error("Error al sincronizar lista base:", error);
+            setStatus("No se pudo sincronizar la lista base.", true);
+        } finally {
+            if (syncBtn) syncBtn.disabled = false;
+        }
+    }
+
     function refreshView() {
         const rows = buildRows();
         const metrics = calculateMetrics(rows);
@@ -1255,6 +1474,11 @@
                 setInviteFormMessage("");
                 toggleInviteForm();
             });
+        }
+
+        const syncSeedBtn = getEl("btn-sync-seed");
+        if (syncSeedBtn) {
+            syncSeedBtn.addEventListener("click", syncSeedGuestsFromButton);
         }
 
         const cancelInviteBtn = getEl("btn-cancel-invite");
@@ -1342,13 +1566,21 @@
                 || typeof db.subscribeToConfirmations !== "function"
                 || typeof db.subscribeToInvitados !== "function"
                 || typeof db.createInvitado !== "function"
+                || typeof db.getInvitados !== "function"
                 || typeof db.updateInvitado !== "function"
+                || typeof db.upsertConfirmationByAdmin !== "function"
+                || typeof db.upsertGroupConfirmationByAdmin !== "function"
                 || typeof db.deleteInvitado !== "function") {
                 throw new Error("RSVPDatabase incompleto para panel admin.");
             }
 
             state.db = db;
+            await ensureEventConfigSeed(db, state.eventId);
+            const seedResult = await ensureSeedGuests(db, state.eventId);
             subscribeData(db);
+            if (seedResult.inserted > 0) {
+                setStatus("Se cargaron " + seedResult.inserted + " invitados iniciales.", false);
+            }
         } catch (error) {
             console.error(error);
             setStatus("No se pudo inicializar el panel.", true);

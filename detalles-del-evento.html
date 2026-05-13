@@ -68,40 +68,138 @@
         .intro-row {
             display: grid;
             grid-template-columns: 120px 1fr;
-            gap: 0.9rem;
             align-items: center;
             margin-bottom: 1.5rem;
         }
 
         .intro-mono {
-            width: 120px;
+            width: 80px;
             height: auto;
-            justify-self: start;
+            justify-self: end;
+            margin-right: 10px;
         }
 
         .intro-copy {
             font-family: var(--font-cormorant);
-            font-size: 1.25rem;
+            font-size: clamp(1.45rem, 2.7vw, 1.95rem);
             font-style: italic;
             line-height: 1.2;
+            text-align: left;
         }
 
         .nombre-destacado {
             display: block;
-            font-size: 2.1rem;
+            font-size: clamp(5rem, 10vw, 6.6rem);
             margin-top: 0.2rem;
             text-align: left;
+            padding: 5px;
         }
 
         .bloque {
             text-align: center;
-            margin-top: 1.6rem;
+            margin-top: 2.225rem;
+        }
+
+        .section-icon {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 0.35rem;
+            opacity: 0;
+            transform: translateY(10px) scale(0.95);
+            animation: iconIn 700ms ease forwards, iconFloat 3s ease-in-out 700ms infinite;
+        }
+
+        .icon-delay-1 { animation-delay: 120ms, 820ms; }
+        .icon-delay-2 { animation-delay: 260ms, 960ms; }
+        .icon-delay-3 { animation-delay: 400ms, 1100ms; }
+        .icon-delay-4 { animation-delay: 540ms, 1240ms; }
+
+        .section-icon-pair.is-large .section-icon {
+            width: 180px;
+            height: 180px;
+            margin-right: -50px;
+            margin-left: -40px;
+            margin-top: 20px;
+}
+
+        .section-icon-pair {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.1rem;
+            margin: 1.1rem auto 0.25rem;
+        }
+
+        .section-icon-pair .section-icon {
+            margin: 0;
+        }
+
+        .countdown {
+            margin-top: 0.8rem;
+            padding: 0.45rem 0;
+            text-align: center;
+        }
+
+        .countdown-title {
+            font-family: var(--font-cormorant);
+            font-size: clamp(1.1rem, 2.2vw, 1.45rem);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #6a4755;
+            margin-bottom: 0.45rem;
+        }
+
+        .countdown-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.45rem;
+        }
+
+        .countdown-item {
+            border-radius: 12px;
+            padding: 0.5rem 0.35rem;
+            background: linear-gradient(150deg, rgba(242, 221, 227, 0.76) 0%, rgba(227, 194, 203, 0.64) 100%);
+            border: 1px solid rgba(184, 116, 144, 0.2);
+            animation: cardBreath 2.8s ease-in-out infinite;
+        }
+
+        .countdown-number {
+            font-family: var(--font-cormorant);
+            font-size: clamp(1.65rem, 3.4vw, 2.25rem);
+            font-weight: 700;
+            color: #5d3445;
+            line-height: 1;
+        }
+
+        .countdown-label {
+            display: block;
+            margin-top: 0.15rem;
+            font-family: var(--font-cormorant);
+            font-size: clamp(0.82rem, 1.8vw, 1rem);
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #7a5663;
+        }
+
+        .countdown-sub {
+            margin-top: 0.5rem;
+            font-family: var(--font-cormorant);
+            font-style: italic;
+            font-size: 0.95rem;
+            color: #4d3740;
+        }
+
+        .calendar-wrap {
+            text-align: center;
+            margin-top: 0.75rem;
         }
 
         .section-title,
         .itinerario-title,
         .additional-title {
-            font-size: 2.25rem;
+            font-size: clamp(2.8rem, 5.8vw, 3.8rem);
             margin-bottom: 0.55rem;
         }
 
@@ -109,7 +207,7 @@
             font-family: var(--font-cormorant);
             font-weight: 700;
             text-transform: uppercase;
-            font-size: 1.15rem;
+            font-size: clamp(1.35rem, 2.9vw, 1.85rem);
             letter-spacing: 0.03em;
             margin-bottom: 0.18rem;
         }
@@ -118,8 +216,8 @@
             font-family: var(--font-cormorant);
             font-style: italic;
             text-transform: lowercase;
-            font-size: 1.03rem;
-            line-height: 1.3;
+            font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+            line-height: 1.38;
             margin-bottom: 0.7rem;
         }
 
@@ -210,21 +308,21 @@
         .dress-row {
             display: grid;
             grid-template-columns: 1fr 120px;
-            gap: 0.9rem;
             align-items: center;
-            margin-top: 1.8rem;
+            margin-top: 2.425rem;
         }
 
         .dress-copy {
-            text-align: left;
+            text-align: right;
         }
 
         .dress-copy .section-title {
-            text-align: left;
+            text-align: right;
+            padding: 10px;
         }
 
         .mono-dress {
-            width: 120px;
+            width: 80px;
             height: auto;
             justify-self: end;
         }
@@ -239,12 +337,12 @@
             font-family: var(--font-cormorant);
             font-weight: 400;
             text-transform: uppercase;
-            font-size: 1rem;
+            font-size: clamp(1.2rem, 2.4vw, 1.5rem);
             letter-spacing: 0.02em;
         }
 
         .info-adicional {
-            margin-top: 1.8rem;
+            margin-top: 2.425rem;
             text-align: center;
         }
 
@@ -262,6 +360,40 @@
 
         .center {
             text-align: center;
+        }
+
+        .reveal-step {
+            opacity: 0;
+            transform: translateY(26px) scale(0.985);
+            transition: opacity 760ms ease, transform 760ms ease;
+            transition-delay: var(--reveal-delay, 0ms);
+            will-change: opacity, transform;
+        }
+
+        .reveal-step.is-visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .mono-final.reveal-step {
+            transition-delay: calc(var(--reveal-delay, 0ms) + 420ms);
+        }
+
+        @keyframes iconIn {
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes cardBreath {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-2px); }
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
         }
 
         @media (min-width: 768px) {
@@ -282,17 +414,22 @@
 
             .section-title,
             .itinerario-title,
-            .additional-title { font-size: 2.7rem; }
+            .additional-title { font-size: clamp(3rem, 4.6vw, 4rem); }
 
             .itinerario-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.4rem 1rem; }
             .mono-final { width: 130px; }
+            .section-icon { width: 100px; height: 100px; }
+            .section-icon-pair.is-large .section-icon { width: 150px; height: 150px; }
+            .countdown-grid { gap: 0.6rem; }
+            .countdown-number { font-size: clamp(1.8rem, 3vw, 2.4rem); }
+            .countdown-label { font-size: clamp(0.9rem, 1.4vw, 1.05rem); }
         }
 
         @media (min-width: 1200px) {
             .detalle-wrap { width: min(86vw, 1100px); }
             .titulo-principal { font-size: 4rem; }
-            .intro-copy { font-size: 1.45rem; }
-            .nombre-destacado { font-size: 2.4rem; }
+            .intro-copy { font-size: clamp(1.6rem, 2vw, 2.05rem); }
+            .nombre-destacado { font-size: clamp(5.2rem, 8vw, 6.8rem); }
         }
     </style>
 </head>
@@ -308,21 +445,50 @@
             </div>
         </section>
 
-        <section class="bloque">
-            <h2 class="section-title">Ceremonia</h2>
-            <p class="subtitulo-strong">Iglesia pendiente</p>
-            <p class="texto-italica">dirección pendiente</p>
-            <p class="texto-italica">horario pendiente</p>
-            <button class="btn-como-llegar" type="button">Cómo llegar</button>
+        <section class="countdown" aria-label="Cuenta regresiva al evento">
+            <p class="countdown-title">Falta para el gran dia</p>
+            <div class="countdown-grid" id="countdown-grid">
+                <div class="countdown-item">
+                    <span class="countdown-number" id="cd-days">00</span>
+                    <span class="countdown-label">Días</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="cd-hours">00</span>
+                    <span class="countdown-label">Horas</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="cd-minutes">00</span>
+                    <span class="countdown-label">Minutos</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="cd-seconds">00</span>
+                    <span class="countdown-label">Segundos</span>
+                </div>
+            </div>
         </section>
 
+        <p class="calendar-wrap">
+            <a
+                class="btn-como-llegar"
+                href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Mis+Quince+Alicia&details=Desde+las+5%3A00+pm+hasta+las+00%3A00+hrs.+-+Hora+Guatemala&location=The+Westin+Camino+Real%2C+Ciudad+de+Guatemala&dates=20260605T170000/20260606T000000&ctz=America/Guatemala"
+                target="_blank"
+                rel="noopener noreferrer"
+            >Agregar al calendario</a>
+        </p>
+
         <section class="bloque">
+            <img class="section-icon icon-delay-2" src="images/iconos/RECEPTION.svg" alt="Icono de recepción">
             <h2 class="section-title">Recepción</h2>
             <p class="subtitulo-strong">The Westin Camino Real</p>
             <p class="texto-italica">salón los lagos</p>
             <p class="texto-italica">8:00 pm</p>
             <a class="btn-como-llegar" href="https://maps.app.goo.gl/rNAuivBpvhVXi5j36" target="_blank" rel="noopener noreferrer">Cómo llegar</a>
         </section>
+
+        <div class="section-icon-pair is-large" aria-hidden="true">
+            <img class="section-icon icon-delay-2" src="images/iconos/LADY.svg" alt="">
+            <img class="section-icon icon-delay-3" src="images/iconos/GROOM.svg" alt="">
+        </div>
 
         <section class="dress-row">
             <div class="dress-copy">
@@ -335,25 +501,28 @@
         <section class="bloque">
             <h2 class="itinerario-title">Itinerario</h2>
             <div class="itinerario-lista">
-                <p class="it-item">Misa - 3:00 pm</p>
-                <p class="it-item">Cocktail - 4:00 pm</p>
-                <p class="it-item">Ingreso de la Quinceañera - 4:30 pm</p>
-                <p class="it-item">Vals - 4:40 pm</p>
-                <p class="it-item">Baile Sorpresa - 5:00 pm</p>
-                <p class="it-item">Cena - 5:30 pm</p>
-                <p class="it-item">Fiesta - 6:30 pm</p>
-                <p class="it-item">Pastel - 9:30 pm</p>
-                <p class="it-item">Despedida mágica - 11:00 pm</p>
+                <p class="it-item">Recepción - 8:00 pm</p>
+                <p class="it-item">Ingreso de la Quinceañera - 8:30 pm</p>
+                <p class="it-item">Vals - 8:40 pm</p>
+                <p class="it-item">Bienvenida y Brindis - 8:55 pm</p>
+                <p class="it-item">Cena - 9:00 pm</p>
+                <p class="it-item">Photoshoot - 9:00 pm</p>
+                <p class="it-item">Fiesta - 9:45 pm</p>
+                <p class="it-item">Shows sorpresa - 11:00 pm</p>
+                <p class="it-item">Pastel - 12:20 am</p>
+                <p class="it-item">Despedida - 12:50 am</p>
             </div>
         </section>
 
         <section class="bloque">
+            <img class="section-icon icon-delay-3" src="images/iconos/PLAYLIST.svg" alt="Icono de playlist">
             <h2 class="section-title">Playlist</h2>
             <p class="texto-italica">me encantaría que me sugieras las canciones que crees que no pueden faltar para que la pasemos increíble</p>
             <a class="btn-como-llegar" href="https://open.spotify.com/playlist/4WZqdfOjJTqoucre6Qp05k?si=8edde5b25676433f&amp;pt=1cf206ac3c722c3009d87032f211d19f" target="_blank" rel="noopener noreferrer">Ir a playlist</a>
         </section>
 
         <section class="bloque">
+            <img class="section-icon icon-delay-4" src="images/iconos/GIFTS.svg" alt="Icono de regalos">
             <h2 class="section-title">Regalo</h2>
             <p class="texto-italica">Tu alegría es lo que hará mi noche inolvidable. Si deseas darme un regalo, el efectivo será muy apreciado en lluvia de sobres el día del evento o bien con una transferencia.</p>
             <button class="btn-como-llegar" id="btn-cuenta" type="button">Datos de Cuenta</button>
@@ -362,7 +531,7 @@
         <section class="bloque">
             <h2 class="section-title">Hagamos los recuerdos Inolvidables</h2>
             <img class="qr-recuerdos" src="images/QR-Alicia.png" alt="QR para subir fotos del evento">
-            <p class="texto-italica">Escanea el QR o utiliza el boton para "Subir fotos"</p>
+                <p class="texto-italica">Escanea el QR o utiliza el botón para "Subir fotos"</p>
             <a class="btn-como-llegar" href="https://drive.google.com/drive/folders/1Cq--9CZ1t9KdWHJexPj9fuJFE2fMR4Kt?usp=drive_link" target="_blank" rel="noopener noreferrer">Subir fotos</a>
         </section>
 
@@ -454,6 +623,79 @@
                 } catch (error) {
                     feedback.textContent = 'No se pudo copiar automáticamente.';
                 }
+            });
+        })();
+
+        (function () {
+            var eventDate = new Date('2026-06-05T20:00:00-06:00').getTime();
+            var dayEl = document.getElementById('cd-days');
+            var hourEl = document.getElementById('cd-hours');
+            var minuteEl = document.getElementById('cd-minutes');
+            var secondEl = document.getElementById('cd-seconds');
+
+            if (!dayEl || !hourEl || !minuteEl || !secondEl) return;
+
+            function pad(n) {
+                return String(n).padStart(2, '0');
+            }
+
+            function updateCountdown() {
+                var now = Date.now();
+                var diff = eventDate - now;
+
+                if (diff <= 0) {
+                    dayEl.textContent = '00';
+                    hourEl.textContent = '00';
+                    minuteEl.textContent = '00';
+                    secondEl.textContent = '00';
+                    return;
+                }
+
+                var totalSeconds = Math.floor(diff / 1000);
+                var days = Math.floor(totalSeconds / 86400);
+                var hours = Math.floor((totalSeconds % 86400) / 3600);
+                var minutes = Math.floor((totalSeconds % 3600) / 60);
+                var seconds = totalSeconds % 60;
+
+                dayEl.textContent = pad(days);
+                hourEl.textContent = pad(hours);
+                minuteEl.textContent = pad(minutes);
+                secondEl.textContent = pad(seconds);
+            }
+
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        })();
+
+        (function () {
+            var targets = Array.prototype.slice.call(document.querySelectorAll(
+                '.intro-row, .countdown, .calendar-wrap, .bloque, .section-icon-pair.is-large, .dress-row, .info-adicional, .mono-final, .center'
+            ));
+
+            if (!targets.length) return;
+
+            targets.forEach(function (el, index) {
+                el.classList.add('reveal-step');
+                var baseDelay = index * 90;
+                if (el.classList.contains('mono-final')) {
+                    baseDelay += 320;
+                }
+                el.style.setProperty('--reveal-delay', baseDelay + 'ms');
+            });
+
+            var observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                });
+            }, {
+                threshold: 0.2,
+                rootMargin: '0px 0px -12% 0px'
+            });
+
+            targets.forEach(function (el) {
+                observer.observe(el);
             });
         })();
     </script>

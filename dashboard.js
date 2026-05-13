@@ -1,38 +1,21 @@
 import { subscribeToConfirmations, subscribeToInvitados } from "./database.js";
 
-const guestDirectorySeed = {
-    "1": { nombre: "María López", pases: 2 },
-    "2": { nombre: "Carlos Méndez", pases: 4 },
-    "3": { nombre: "Andrea Ruiz", pases: 1 },
-    "4": { nombre: "Familia García", pases: 6 },
-    "5": { nombre: "Pedro Sánchez", pases: 2 }
-};
-
-const guestDirectoriesByEvent = {
-    "rocio-fernando-2027": guestDirectorySeed
-};
-
-window.LocalGuestSeeds = {
-    ...(window.LocalGuestSeeds || {}),
-    ...guestDirectoriesByEvent
-};
-
 const VALID_FILTERS = new Set(["todos", "si", "no", "pendiente"]);
 
 function resolveDashboardEventContext() {
     const externalConfig = window.config || {};
     const eventConfig = externalConfig.event || {};
     const eventIdParam = String(eventConfig.eventIdParam || "eventId").trim() || "eventId";
-    const defaultEventId = String(eventConfig.defaultEventId || "rocio-fernando-2027").trim() || "rocio-fernando-2027";
+    const defaultEventId = (String(eventConfig.defaultEventId || "alicia-2026").trim() || "alicia-2026").toLowerCase();
     const params = new URLSearchParams(window.location.search || "");
-    const fromQuery = String(params.get(eventIdParam) || "").trim();
+    const fromQuery = String(params.get(eventIdParam) || "").trim().toLowerCase();
     const fromWindow = String(
         window.currentEventId
         || (window.EventContext && window.EventContext.eventId)
         || ""
-    ).trim();
+    ).trim().toLowerCase();
 
-    const eventId = fromWindow || fromQuery || defaultEventId;
+    const eventId = (fromWindow || fromQuery || defaultEventId || "alicia-2026").toLowerCase();
     const context = { eventId, eventIdParam, defaultEventId };
 
     window.EventContext = {
@@ -42,10 +25,6 @@ function resolveDashboardEventContext() {
     window.currentEventId = eventId;
 
     return context;
-}
-
-function getGuestDirectoryForEvent(eventId) {
-    return guestDirectoriesByEvent[eventId] || {};
 }
 
 function mapInvitadosToDirectory(invitados) {
@@ -274,15 +253,9 @@ function downloadCsvFile(content, eventId) {
 
 function setSummaryValues(rows) {
     const totalGuests = rows.length;
-    const totalYes = rows
-        .filter((row) => row && row.respuesta === "si")
-        .reduce((acc, row) => acc + (Number(row && row.cantidadConfirmada) || 0), 0);
-    const totalNo = rows
-        .filter((row) => row && row.respuesta === "no")
-        .reduce((acc, row) => acc + (Number(row && row.pasesAsignados) || 0), 0);
-    const totalPending = rows
-        .filter((row) => row && row.respuesta === "pendiente")
-        .reduce((acc, row) => acc + (Number(row && row.pasesAsignados) || 0), 0);
+    const totalYes = rows.filter((row) => row && row.respuesta === "si").length;
+    const totalNo = rows.filter((row) => row && row.respuesta === "no").length;
+    const totalPending = rows.filter((row) => row && row.respuesta === "pendiente").length;
     const totalConfirmedPeople = rows
         .filter((row) => row.respuesta === "si")
         .reduce((acc, row) => acc + (Number(row.cantidadConfirmada) || 0), 0);
@@ -451,15 +424,13 @@ document.addEventListener("DOMContentLoaded", function () {
         eventBadge.textContent = "Evento activo: " + activeEventId;
     }
 
-    const fallbackGuestDirectory = getGuestDirectoryForEvent(activeEventId);
     let remoteGuestDirectory = {};
-    let hasRemoteGuestSource = false;
     let confirmationsState = [];
     const searchInput = document.getElementById("dashboard-search");
     const clearButton = document.getElementById("dashboard-clear");
     const exportButton = document.getElementById("dashboard-export");
     const filterButtons = Array.from(document.querySelectorAll(".filter-chip[data-filter]"));
-    let allRows = buildRows([], fallbackGuestDirectory);
+    let allRows = buildRows([], remoteGuestDirectory);
     let visibleRows = [];
     let activeFilter = "todos";
     let currentSearchTerm = "";
@@ -472,14 +443,8 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    function getEffectiveGuestDirectory() {
-        if (hasRemoteGuestSource) return remoteGuestDirectory;
-        return fallbackGuestDirectory;
-    }
-
     function refreshRowsFromSources() {
-        const effectiveGuestDirectory = getEffectiveGuestDirectory();
-        const rows = buildRows(confirmationsState, effectiveGuestDirectory);
+        const rows = buildRows(confirmationsState, remoteGuestDirectory);
         updateDashboard(rows);
     }
 
@@ -543,7 +508,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     syncFilterButtons();
 
-    const initialRows = buildRows([], fallbackGuestDirectory);
+    const initialRows = buildRows([], remoteGuestDirectory);
     updateDashboard(initialRows);
 
     subscribeToConfirmations(
@@ -561,7 +526,6 @@ document.addEventListener("DOMContentLoaded", function () {
         activeEventId,
         function (invitados) {
             const invitadosArray = Array.isArray(invitados) ? invitados : [];
-            hasRemoteGuestSource = invitadosArray.length > 0;
             remoteGuestDirectory = mapInvitadosToDirectory(invitadosArray);
             refreshRowsFromSources();
         },

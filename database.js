@@ -86,6 +86,10 @@ function getEventDeseosPath(eventId) {
   return getEventBasePath(eventId) + "/deseos";
 }
 
+function getEventRsvpGrupoPath(eventId) {
+  return getEventBasePath(eventId) + "/rsvp_grupo";
+}
+
 function getLegacyRsvpRef(guestId) {
   const safeId = sanitizeFirebaseKey(guestId);
   return ref(db, legacyRsvpBasePath + "/" + safeId);
@@ -124,12 +128,72 @@ function mapRsvpSnapshotToArray(snapshot) {
   return Object.entries(raw)
     .map(function ([key, value]) {
       if (!value || typeof value !== "object") return null;
+      if (typeof value.respuesta === "undefined") return null;
       return {
         ...value,
         _key: key
       };
     })
     .filter(Boolean);
+}
+
+function mapGroupRsvpSnapshotToArray(snapshot) {
+  if (!snapshot || !snapshot.exists()) return [];
+  const raw = snapshot.val();
+  if (!raw || typeof raw !== "object") return [];
+
+  const records = [];
+  Object.entries(raw).forEach(function ([groupId, groupNode]) {
+    if (!groupNode || typeof groupNode !== "object") return;
+    const responses = groupNode.responses && typeof groupNode.responses === "object"
+      ? groupNode.responses
+      : {};
+
+    Object.entries(responses).forEach(function ([responseId, value]) {
+      if (!value || typeof value !== "object") return;
+      const order = Math.max(1, Number(value.order || 1));
+      const displayId = String(value.displayId || (String(groupId || "G") + "-" + String(order).padStart(3, "0"))).trim();
+      records.push({
+        ...value,
+        id: displayId,
+        displayId,
+        groupId: String(value.groupId || groupId || "").trim(),
+        responseId: String(responseId || "").trim(),
+        isGroupResponse: true,
+        _key: responseId
+      });
+    });
+  });
+
+  return records;
+}
+
+function normalizeComparableName(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildGroupDisplayId(groupId, pasesDisponiblesLuego, respuesta, order) {
+  const match = String(groupId || "").trim().match(/^([^\d]*)(\d+)$/);
+  if (match) {
+    const prefix = String(match[1] || "G");
+    const baseNumber = Number(match[2] || 0);
+    if (respuesta === "si") {
+      const currentNumber = Math.max(1, Number(pasesDisponiblesLuego || 0) + 1);
+      return prefix + String(currentNumber);
+    }
+    return prefix + String(baseNumber) + "-N" + String(order).padStart(2, "0");
+  }
+
+  if (respuesta === "si") {
+    return String(groupId || "G") + "-" + String(Math.max(1, Number(pasesDisponiblesLuego || 0) + 1));
+  }
+
+  return String(groupId || "G") + "-N" + String(order).padStart(2, "0");
 }
 
 function mapWishesSnapshotToArray(snapshot) {
@@ -605,6 +669,150 @@ async function saveConfirmation(arg1, arg2) {
   }
 }
 
+async function upsertConfirmationByAdmin(arg1, arg2) {
+  const parsed = parseEventAndPayloadArgs(arg1, arg2);
+  const eventId = parsed.eventId;
+  const payload = parsed.payload;
+  const guestId = String((payload && payload.id) || "").trim() || "default";
+  const safeGuestId = sanitizeFirebaseKey(guestId);
+  const response = String((payload && payload.respuesta) || "").trim().toLowerCase() === "no" ? "no" : "si";
+  const assigned = Math.max(0, Number((payload && payload.pasesAsignados) || 0));
+  const confirmed = response === "si"
+    ? Math.max(1, Number((payload && payload.cantidadConfirmada) || assigned || 1))
+    : 0;
+
+  const record = {
+    id: guestId,
+    nombre: String((payload && payload.nombre) || ""),
+    pasesAsignados: assigned,
+    respuesta: response,
+    cantidadConfirmada: confirmed,
+    confirmado: true,
+    fechaConfirmacion: Number((payload && payload.fechaConfirmacion) || Date.now())
+  };
+
+  await set(ref(db, getEventRsvpPath(eventId) + "/" + safeGuestId), record);
+  return record;
+}
+
+async function saveGroupConfirmation(arg1, arg2) {
+  const parsed = parseEventAndPayloadArgs(arg1, arg2);
+  const eventId = parsed.eventId;
+  const payload = parsed.payload || {};
+  const groupId = String(payload.groupId || payload.id || "").trim();
+  if (!groupId) throw new Error("GROUP_ID_REQUIRED");
+
+  const nombre = String(payload.nombre || "").trim();
+  if (!nombre) throw new Error("GROUP_NAME_REQUIRED");
+  const normalizedNombre = normalizeComparableName(nombre);
+
+  const safeGroupId = sanitizeFirebaseKey(groupId);
+  let group = null;
+  try {
+    const groupRef = ref(db, getEventInvitadosPath(eventId) + "/" + safeGroupId);
+    const groupSnapshot = await get(groupRef);
+    group = groupSnapshot.exists() ? groupSnapshot.val() : null;
+  } catch (error) {
+    group = null;
+  }
+  if (group && group.activo === false) throw new Error("GROUP_INACTIVE");
+
+  const currentRsvpSnapshot = await get(ref(db, getEventRsvpPath(eventId)));
+  const currentRsvpRecords = mapRsvpSnapshotToArray(currentRsvpSnapshot);
+  const responses = currentRsvpRecords.filter(function (entry) {
+    return String(entry && entry.groupId || "").trim() === groupId;
+  });
+
+  const duplicated = responses.some(function (entry) {
+    if (!entry || typeof entry !== "object") return false;
+    return normalizeComparableName(entry.nombre) === normalizedNombre;
+  });
+  if (duplicated) {
+    const duplicateError = new Error("GROUP_NAME_ALREADY_CONFIRMED");
+    duplicateError.code = "GROUP_NAME_ALREADY_CONFIRMED";
+    throw duplicateError;
+  }
+
+  const respuesta = String(payload.respuesta || "").trim().toLowerCase() === "no" ? "no" : "si";
+  const inferredMatch = String(groupId || "").trim().match(/^G(\d+)$/i);
+  const inferredTotal = inferredMatch
+    ? Math.max(1, Number(inferredMatch[1]) || 50)
+    : 50;
+  const initialDisponibles = group
+    ? Math.max(0, Number(group.pasesDisponibles || group.pases || inferredTotal))
+    : inferredTotal;
+  const confirmedYesCount = responses.filter(function (entry) {
+    return String(entry && entry.respuesta || "").toLowerCase() === "si";
+  }).length;
+  let pasesDisponiblesLuego = Math.max(0, initialDisponibles - confirmedYesCount);
+
+  if (respuesta === "si") {
+    if (pasesDisponiblesLuego < 1) {
+      const noSpaceError = new Error("GROUP_NO_SPACES_LEFT");
+      noSpaceError.code = "GROUP_NO_SPACES_LEFT";
+      throw noSpaceError;
+    }
+    pasesDisponiblesLuego = Math.max(0, pasesDisponiblesLuego - 1);
+  }
+
+  const nextOrder = Math.max(1, responses.length + 1);
+  const displayId = buildGroupDisplayId(groupId, pasesDisponiblesLuego, respuesta, nextOrder);
+  const responseId = sanitizeFirebaseKey(displayId);
+  const record = {
+    id: displayId,
+    displayId,
+    groupId,
+    responseId,
+    nombre,
+    pasesAsignados: 1,
+    respuesta,
+    cantidadConfirmada: respuesta === "si" ? 1 : 0,
+    confirmado: true,
+    isGroupResponse: true,
+    fechaConfirmacion: Number(payload.fechaConfirmacion || Date.now()),
+    order: nextOrder,
+    pasesDisponiblesLuego
+  };
+
+  await set(ref(db, getEventRsvpPath(eventId) + "/" + responseId), record);
+  return record;
+}
+
+async function upsertGroupConfirmationByAdmin(arg1, arg2) {
+  const parsed = parseEventAndPayloadArgs(arg1, arg2);
+  const eventId = parsed.eventId;
+  const payload = parsed.payload || {};
+  const groupId = String(payload.groupId || "").trim();
+  const responseId = String(payload.responseId || payload.id || "").trim();
+  if (!groupId || !responseId) throw new Error("GROUP_RESPONSE_REFERENCE_REQUIRED");
+
+  const safeResponseId = sanitizeFirebaseKey(responseId);
+  const responseRef = ref(db, getEventRsvpPath(eventId) + "/" + safeResponseId);
+  const currentSnapshot = await get(responseRef);
+  if (!currentSnapshot.exists()) throw new Error("GROUP_RESPONSE_NOT_FOUND");
+
+  const current = currentSnapshot.val() || {};
+  const previousRespuesta = String(current.respuesta || "").toLowerCase();
+  const nextRespuesta = String(payload.respuesta || previousRespuesta || "pendiente").toLowerCase();
+  const normalizedNextRespuesta = nextRespuesta === "si" || nextRespuesta === "no" ? nextRespuesta : "pendiente";
+
+  // Nota: para compatibilidad con reglas RTDB existentes, no se persiste
+  // un contador mutable separado. El cupo del grupo se calcula en saveGroupConfirmation.
+
+  const nextRecord = {
+    ...current,
+    nombre: String(payload.nombre || current.nombre || "Invitado").trim() || "Invitado",
+    respuesta: normalizedNextRespuesta,
+    cantidadConfirmada: normalizedNextRespuesta === "si" ? 1 : 0,
+    fechaConfirmacion: Number(payload.fechaConfirmacion || current.fechaConfirmacion || Date.now()),
+    confirmado: true,
+    isGroupResponse: true
+  };
+
+  await set(responseRef, nextRecord);
+  return nextRecord;
+}
+
 async function getAllConfirmations(eventId) {
   const legacyPolicy = resolveLegacyPolicy();
   const eventRead = await Promise.allSettled([
@@ -614,7 +822,6 @@ async function getAllConfirmations(eventId) {
   const eventRecords = eventRead[0].status === "fulfilled"
     ? mapRsvpSnapshotToArray(eventRead[0].value)
     : [];
-
   if (eventRead[0].status === "rejected") {
     console.warn("No se pudo leer RSVP por evento en getAllConfirmations:", eventRead[0].reason);
   }
@@ -631,7 +838,7 @@ async function getAllConfirmations(eventId) {
     ? mapRsvpSnapshotToArray(legacyRead[0].value)
     : [];
 
-  return legacyRecords;
+  return eventRecords.concat(legacyRecords);
 }
 
 async function getEventConfig(eventId) {
@@ -846,6 +1053,11 @@ async function createInvitado(arg1, arg2) {
   const nombre = sanitizeText(payload.nombre);
   const pases = Math.max(1, Number(payload.pases) || 1);
   const activo = typeof payload.activo === "undefined" ? true : Boolean(payload.activo);
+  const tipo = String(payload.tipo || "individual").trim().toLowerCase();
+  const solicitaNombre = Boolean(payload.solicitaNombre);
+  const pasesDisponibles = tipo === "grupo"
+    ? Math.max(0, Number(payload.pasesDisponibles || pases))
+    : null;
 
   if (!nombre) {
     throw new Error("INVITADO_NOMBRE_REQUERIDO");
@@ -856,8 +1068,14 @@ async function createInvitado(arg1, arg2) {
     id,
     nombre,
     pases,
-    activo
+    activo,
+    tipo,
+    solicitaNombre
   };
+
+  if (tipo === "grupo") {
+    invitadoRecord.pasesDisponibles = pasesDisponibles;
+  }
 
   await set(ref(db, getEventInvitadosPath(eventId) + "/" + safeGuestId), invitadoRecord);
   return invitadoRecord;
@@ -875,6 +1093,11 @@ async function updateInvitado(arg1, arg2, arg3) {
   const nombre = sanitizeText(payload.nombre);
   const pases = Math.max(1, Number(payload.pases) || 1);
   const activo = typeof payload.activo === "undefined" ? true : Boolean(payload.activo);
+  const tipo = String(payload.tipo || "individual").trim().toLowerCase();
+  const solicitaNombre = Boolean(payload.solicitaNombre);
+  const pasesDisponibles = tipo === "grupo"
+    ? Math.max(0, Number(payload.pasesDisponibles || pases))
+    : null;
 
   if (!nombre) {
     throw new Error("INVITADO_NOMBRE_REQUERIDO");
@@ -885,8 +1108,14 @@ async function updateInvitado(arg1, arg2, arg3) {
     id: guestId,
     nombre,
     pases,
-    activo
+    activo,
+    tipo,
+    solicitaNombre
   };
+
+  if (tipo === "grupo") {
+    invitadoRecord.pasesDisponibles = pasesDisponibles;
+  }
 
   await set(ref(db, getEventInvitadosPath(eventId) + "/" + safeGuestId), invitadoRecord);
   return invitadoRecord;
@@ -1369,9 +1598,13 @@ window.RSVPDatabase = {
   subscribeToEventConfig,
   getEventInvitadosPath,
   getEventRsvpPath,
+  getEventRsvpGrupoPath,
   getEventDeseosPath,
   getConfirmationByGuestId,
   saveConfirmation,
+  saveGroupConfirmation,
+  upsertConfirmationByAdmin,
+  upsertGroupConfirmationByAdmin,
   getAllConfirmations,
   subscribeToConfirmations,
   saveWish,
@@ -1410,9 +1643,13 @@ export {
   subscribeToEventConfig,
   getEventInvitadosPath,
   getEventRsvpPath,
+  getEventRsvpGrupoPath,
   getEventDeseosPath,
   getConfirmationByGuestId,
   saveConfirmation,
+  saveGroupConfirmation,
+  upsertConfirmationByAdmin,
+  upsertGroupConfirmationByAdmin,
   getAllConfirmations,
   subscribeToConfirmations,
   saveWish,
