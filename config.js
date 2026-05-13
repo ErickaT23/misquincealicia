@@ -28,11 +28,11 @@ const config = {
 
     evento: {
         ceremonia: {
-            titulo: "Ceremonia",
-            lugar: "Iglesia de La Merced",
-            hora: "3:00 PM",
-            direccion: "1a Calle Poniente, Antigua Guatemala",
-            ubicacionUrl: "https://maps.app.goo.gl/3ZrcNpw7afgj21q79"
+            titulo: "Misa",
+            lugar: "Iglesia De San Isidro Labrador",
+            hora: "5:30 PM",
+            direccion: "Bv. Acatan, Zona 16, Ciudad de Guatemala.",
+            ubicacionUrl: "https://maps.app.goo.gl/4oVkkZG1qH7mi6kLA"
         },
         recepcion: {
             titulo: "Recepción",

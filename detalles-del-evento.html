@@ -177,7 +177,7 @@
             display: block;
             margin-top: 0.15rem;
             font-family: var(--font-cormorant);
-            font-size: clamp(0.82rem, 1.8vw, 1rem);
+            font-size: 10px;
             letter-spacing: 0.14em;
             text-transform: uppercase;
             color: #7a5663;
@@ -476,6 +476,15 @@
             >Agregar al calendario</a>
         </p>
 
+        <section class="bloque" id="section-ceremonia">
+            <img class="section-icon icon-delay-1" src="images/iconos/CHURCH.svg" alt="Icono de iglesia">
+            <h2 class="section-title" id="ceremonia-titulo">Ceremonia y Misa</h2>
+            <p class="subtitulo-strong" id="ceremonia-lugar"></p>
+            <p class="texto-italica" id="ceremonia-direccion"></p>
+            <p class="texto-italica" id="ceremonia-hora">5:30 pm</p>
+            <a class="btn-como-llegar" id="ceremonia-mapa" href="#" target="_blank" rel="noopener noreferrer">Cómo llegar</a>
+        </section>
+
         <section class="bloque">
             <img class="section-icon icon-delay-2" src="images/iconos/RECEPTION.svg" alt="Icono de recepción">
             <h2 class="section-title">Recepción</h2>
@@ -498,9 +507,10 @@
             <img class="mono-dress" src="images/MONO-ROSA.png" alt="Decoracion floral rosa">
         </section>
 
-        <section class="bloque">
+        <section class="bloque" id="section-itinerario">
             <h2 class="itinerario-title">Itinerario</h2>
             <div class="itinerario-lista">
+                <p class="it-item" id="itinerario-misa">Misa - 5:30 pm</p>
                 <p class="it-item">Recepción - 8:00 pm</p>
                 <p class="it-item">Ingreso de la Quinceañera - 8:30 pm</p>
                 <p class="it-item">Vals - 8:40 pm</p>
@@ -565,9 +575,65 @@
         </div>
     </div>
 
+    <script src="config.js"></script>
     <script src="animations-global.js"></script>
     <script src="music-global.js"></script>
     <script>
+        (function () {
+            var params = new URLSearchParams(window.location.search || '');
+            var guestId = String(params.get('id') || params.get('idg') || '').trim().toUpperCase();
+            var isGroup50 = guestId === 'G50' || guestId === '50';
+            var ceremonySection = document.getElementById('section-ceremonia');
+            var itinerarySection = document.getElementById('section-itinerario');
+            var itineraryMisa = document.getElementById('itinerario-misa');
+            if (!ceremonySection) return;
+
+            if (isGroup50) {
+                ceremonySection.style.display = 'none';
+                ceremonySection.setAttribute('aria-hidden', 'true');
+                if (itinerarySection) {
+                    itinerarySection.style.display = '';
+                    itinerarySection.removeAttribute('aria-hidden');
+                }
+                if (itineraryMisa) {
+                    itineraryMisa.style.display = 'none';
+                    itineraryMisa.setAttribute('aria-hidden', 'true');
+                }
+                return;
+            }
+
+            if (itineraryMisa) {
+                itineraryMisa.style.display = '';
+                itineraryMisa.removeAttribute('aria-hidden');
+            }
+
+            var eventConfig = (window.config && window.config.evento && window.config.evento.ceremonia) || {};
+            var titleEl = document.getElementById('ceremonia-titulo');
+            var placeEl = document.getElementById('ceremonia-lugar');
+            var addressEl = document.getElementById('ceremonia-direccion');
+            var timeEl = document.getElementById('ceremonia-hora');
+            var mapEl = document.getElementById('ceremonia-mapa');
+
+            if (titleEl && eventConfig.titulo) titleEl.textContent = eventConfig.titulo;
+            if (placeEl) {
+                placeEl.textContent = eventConfig.lugar || '';
+                placeEl.style.display = eventConfig.lugar ? '' : 'none';
+            }
+            if (addressEl) {
+                addressEl.textContent = eventConfig.direccion || '';
+                addressEl.style.display = eventConfig.direccion ? '' : 'none';
+            }
+            if (timeEl && eventConfig.hora) timeEl.textContent = eventConfig.hora;
+            if (mapEl) {
+                if (eventConfig.ubicacionUrl) {
+                    mapEl.href = eventConfig.ubicacionUrl;
+                    mapEl.style.display = '';
+                } else {
+                    mapEl.style.display = 'none';
+                }
+            }
+        })();
+
         (function () {
             var btn = document.getElementById('btn-back-home');
             if (!btn) return;
