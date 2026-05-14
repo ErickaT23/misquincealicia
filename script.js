@@ -410,8 +410,20 @@ const InvitadoApp = {
 
     renderPasesText(pases) {
         const lugaresEl = document.querySelector('.invitado-lugares');
+        const portadaLugaresEl = document.querySelector('.portada-sobre-lugares');
         const portadaNumeroEl = document.getElementById('portada-numero-lugares');
-        if (portadaNumeroEl) portadaNumeroEl.textContent = String(pases);
+        const totalPases = Math.max(1, Number(pases) || 1);
+
+        if (portadaLugaresEl) {
+            const numeroPortadaEl = portadaNumeroEl || document.createElement('span');
+            numeroPortadaEl.id = 'portada-numero-lugares';
+            numeroPortadaEl.textContent = String(totalPases);
+            portadaLugaresEl.replaceChildren(
+                numeroPortadaEl,
+                document.createTextNode(totalPases === 1 ? ' lugar en su honor' : ' lugares en su honor')
+            );
+        }
+
         if (!lugaresEl) return;
 
         const template = String(SiteConfig.textos.mensajePases || '');
@@ -421,12 +433,12 @@ const InvitadoApp = {
         }
 
         const parts = template.split('{pases}');
-        const suffixText = pases === 1
+        const suffixText = totalPases === 1
             ? String(parts[1] || '').replace(/lugares/i, 'lugar')
             : String(parts[1] || '');
         const numeroEl = document.createElement('span');
         numeroEl.id = 'numero-lugares';
-        numeroEl.textContent = String(pases);
+        numeroEl.textContent = String(totalPases);
 
         const textoEl = document.createElement('span');
         textoEl.id = 'texto-lugares';
