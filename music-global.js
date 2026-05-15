@@ -10,6 +10,7 @@
     var watchdogId = null;
     var pendingResumeByGesture = false;
     var resumeRetryTimer = null;
+    var isUserPausing = false;
 
     function bindResumeOnUserGesture() {
         if (pendingResumeByGesture) return;
@@ -87,6 +88,7 @@
 
     function play() {
         if (!audio) return;
+        isUserPausing = false;
         var p = audio.play();
         if (p && typeof p.then === 'function') {
             p.then(function () {
@@ -100,7 +102,7 @@
     }
 
     function scheduleResumeRetry() {
-        if (!audio || !getShouldPlay() || !audio.paused) return;
+        if (!audio || !getShouldPlay() || !audio.paused || isUserPausing) return;
         if (resumeRetryTimer) window.clearTimeout(resumeRetryTimer);
         resumeRetryTimer = window.setTimeout(function () {
             if (audio && getShouldPlay() && audio.paused && !document.hidden) {
@@ -111,8 +113,9 @@
 
     function pause() {
         if (!audio) return;
-        audio.pause();
+        isUserPausing = true;
         setShouldPlay(false);
+        audio.pause();
         saveCurrentTime();
         updateBtn();
     }
@@ -208,6 +211,10 @@
         audio.addEventListener('play', updateBtn);
         audio.addEventListener('pause', updateBtn);
         audio.addEventListener('pause', scheduleResumeRetry);
+        audio.addEventListener('stalled', scheduleResumeRetry);
+        audio.addEventListener('suspend', scheduleResumeRetry);
+        audio.addEventListener('waiting', scheduleResumeRetry);
+        audio.addEventListener('emptied', scheduleResumeRetry);
         audio.addEventListener('ended', function () {
             if (getShouldPlay()) {
                 play();
