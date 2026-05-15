@@ -683,7 +683,7 @@ position: static;
 .hero-frase-final {
     position: absolute;
     top: 55rem;
-    left: 13%;
+    left: 14%;
     width: 260px;
     text-align: center;
     font-family: var(--font-title-main);
@@ -699,7 +699,7 @@ position: static;
 
 .hero-mono-centro {
     position: absolute;
-    left: 120px;
+    left: 125px;
     top: 63rem;
     width: 120px;
     transform: translateX(-50%);
