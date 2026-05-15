@@ -7,7 +7,9 @@
     var btn = null;
     var homeBtn = null;
     var timerId = null;
+    var watchdogId = null;
     var pendingResumeByGesture = false;
+    var resumeRetryTimer = null;
 
     function bindResumeOnUserGesture() {
         if (pendingResumeByGesture) return;
@@ -97,6 +99,16 @@
         }
     }
 
+    function scheduleResumeRetry() {
+        if (!audio || !getShouldPlay() || !audio.paused) return;
+        if (resumeRetryTimer) window.clearTimeout(resumeRetryTimer);
+        resumeRetryTimer = window.setTimeout(function () {
+            if (audio && getShouldPlay() && audio.paused && !document.hidden) {
+                play();
+            }
+        }, 150);
+    }
+
     function pause() {
         if (!audio) return;
         audio.pause();
@@ -181,6 +193,8 @@
             audio.volume = 0.4;
             document.body.appendChild(audio);
         }
+        audio.setAttribute('playsinline', '');
+        audio.setAttribute('webkit-playsinline', '');
 
         ensureUI();
         restoreCurrentTime();
@@ -193,6 +207,13 @@
         }
         audio.addEventListener('play', updateBtn);
         audio.addEventListener('pause', updateBtn);
+        audio.addEventListener('pause', scheduleResumeRetry);
+        audio.addEventListener('ended', function () {
+            if (getShouldPlay()) {
+                play();
+            }
+        });
+        audio.addEventListener('canplay', scheduleResumeRetry);
 
         window.addEventListener('beforeunload', saveCurrentTime);
         window.addEventListener('pagehide', saveCurrentTime);
@@ -201,9 +222,23 @@
                 play();
             }
         });
+        window.addEventListener('focus', scheduleResumeRetry);
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) {
+                scheduleResumeRetry();
+            }
+        });
 
         if (timerId) window.clearInterval(timerId);
         timerId = window.setInterval(saveCurrentTime, 1500);
+
+        if (watchdogId) window.clearInterval(watchdogId);
+        watchdogId = window.setInterval(function () {
+            if (!audio || document.hidden) return;
+            if (getShouldPlay() && audio.paused) {
+                play();
+            }
+        }, 2200);
 
         if (getShouldPlay()) {
             play();
