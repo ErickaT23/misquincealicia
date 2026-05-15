@@ -7,6 +7,26 @@
     var btn = null;
     var homeBtn = null;
     var timerId = null;
+    var pendingResumeByGesture = false;
+
+    function bindResumeOnUserGesture() {
+        if (pendingResumeByGesture) return;
+        pendingResumeByGesture = true;
+
+        function onGesture() {
+            document.removeEventListener('pointerdown', onGesture);
+            document.removeEventListener('keydown', onGesture);
+            document.removeEventListener('touchstart', onGesture);
+            pendingResumeByGesture = false;
+            if (getShouldPlay()) {
+                play();
+            }
+        }
+
+        document.addEventListener('pointerdown', onGesture, { once: true, passive: true });
+        document.addEventListener('keydown', onGesture, { once: true });
+        document.addEventListener('touchstart', onGesture, { once: true, passive: true });
+    }
 
     function getShouldPlay() {
         return window.localStorage.getItem(STORAGE_PLAY) === '1';
@@ -72,6 +92,7 @@
                 updateBtn();
             }).catch(function () {
                 updateBtn();
+                bindResumeOnUserGesture();
             });
         }
     }
@@ -175,6 +196,11 @@
 
         window.addEventListener('beforeunload', saveCurrentTime);
         window.addEventListener('pagehide', saveCurrentTime);
+        window.addEventListener('pageshow', function () {
+            if (getShouldPlay() && audio && audio.paused) {
+                play();
+            }
+        });
 
         if (timerId) window.clearInterval(timerId);
         timerId = window.setInterval(saveCurrentTime, 1500);
