@@ -30,10 +30,10 @@
             "24": { nombre: "Kelvin Gerardo Anaya Lopez", pases: 1 },
             "G50": {
                 nombre: "Invitación grupal abierta",
-                pases: 50,
+                pases: 100,
                 tipo: "grupo",
                 solicitaNombre: true,
-                pasesDisponibles: 50
+                pasesDisponibles: 100
             }
         }
     };
@@ -482,12 +482,20 @@
                     fechaConfirmacion: row.fechaConfirmacion || Date.now()
                 });
             } else {
-                await state.db.updateInvitado(state.eventId, row.id, {
+                const updatePayload = {
                     id: row.id,
                     nombre,
                     pases,
                     activo
-                });
+                };
+
+                if (String(row.id || "").trim().toUpperCase() === "G50") {
+                    updatePayload.tipo = "grupo";
+                    updatePayload.solicitaNombre = true;
+                    updatePayload.pasesDisponibles = pases;
+                }
+
+                await state.db.updateInvitado(state.eventId, row.id, updatePayload);
 
                 if (respuesta === "si" || respuesta === "no") {
                     await state.db.upsertConfirmationByAdmin(state.eventId, {

@@ -177,14 +177,30 @@ function normalizeComparableName(value) {
     .trim();
 }
 
-function buildGroupDisplayId(groupId, pasesDisponiblesLuego, respuesta, order) {
+function buildGroupDisplayId(groupId, pasesDisponiblesLuego, respuesta, order, existingResponses) {
   const match = String(groupId || "").trim().match(/^([^\d]*)(\d+)$/);
   if (match) {
     const prefix = String(match[1] || "G");
     const baseNumber = Number(match[2] || 0);
     if (respuesta === "si") {
-      const currentNumber = Math.max(1, Number(pasesDisponiblesLuego || 0) + 1);
-      return prefix + String(currentNumber);
+      let maxUsedNumber = Math.max(1, baseNumber);
+      const yesResponses = (Array.isArray(existingResponses) ? existingResponses : []).filter(function (entry) {
+        return String(entry && entry.respuesta || "").toLowerCase() === "si";
+      });
+
+      yesResponses.forEach(function (entry) {
+        const candidateId = String(entry && (entry.displayId || entry.id) || "").trim();
+        if (!candidateId) return;
+        const parsed = candidateId.match(/^([^\d]*)(\d+)$/);
+        if (!parsed) return;
+        const candidatePrefix = String(parsed[1] || "");
+        const candidateNumber = Number(parsed[2] || 0);
+        if (candidatePrefix === prefix && Number.isFinite(candidateNumber)) {
+          maxUsedNumber = Math.max(maxUsedNumber, candidateNumber);
+        }
+      });
+
+      return prefix + String(maxUsedNumber + 1);
     }
     return prefix + String(baseNumber) + "-N" + String(order).padStart(2, "0");
   }
@@ -756,7 +772,7 @@ async function saveGroupConfirmation(arg1, arg2) {
   }
 
   const nextOrder = Math.max(1, responses.length + 1);
-  const displayId = buildGroupDisplayId(groupId, pasesDisponiblesLuego, respuesta, nextOrder);
+  const displayId = buildGroupDisplayId(groupId, pasesDisponiblesLuego, respuesta, nextOrder, responses);
   const responseId = sanitizeFirebaseKey(displayId);
   const record = {
     id: displayId,

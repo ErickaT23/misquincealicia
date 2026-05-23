@@ -227,7 +227,7 @@
                 '22': { nombre: 'Jose Carlo Rivas', pases: 1 },
                 '23': { nombre: 'Josseline Rodríguez', pases: 1 },
                 '24': { nombre: 'Kelvin Gerardo Anaya Lopez', pases: 1 },
-                'G50': { nombre: 'Invitación grupal abierta', pases: 1, tipo: 'grupo', solicitaNombre: true, pasesDisponibles: 50 }
+                'G50': { nombre: 'Invitación grupal abierta', pases: 1, tipo: 'grupo', solicitaNombre: true, pasesDisponibles: 100 }
             },
             invitadoDefault: { nombre: 'Invitado Especial', pases: 2 },
             paramId: 'id'
@@ -264,6 +264,7 @@
         const finalMessage = document.getElementById('rsvp-final-message');
 
         let guestData = { id: guestId, nombre: GuestConfig.invitadoDefault.nombre, pases: GuestConfig.invitadoDefault.pases, activo: true, tipo: 'individual', solicitaNombre: false };
+        const isGroupOpenLink = String(guestId || '').trim().toUpperCase() === 'G50';
 
         function fillGuestOptions(totalPases) {
             guestSelect.replaceChildren();
@@ -376,12 +377,18 @@
                     console.warn('No se pudo cargar invitado remoto:', error);
                 }
             }
+
+            if (isGroupOpenLink) {
+                guestData.tipo = 'grupo';
+                guestData.solicitaNombre = true;
+                guestData.pases = 1;
+            }
         }
 
         async function checkExisting() {
             const db = window.RSVPDatabase;
             const isGroup = guestData.tipo === 'grupo' || guestData.tipo === 'group';
-            if (isGroup || !db || typeof db.getConfirmationByGuestId !== 'function') return;
+            if (isGroupOpenLink || isGroup || !db || typeof db.getConfirmationByGuestId !== 'function') return;
             try {
                 const existing = await db.getConfirmationByGuestId(eventId, guestData.id);
                 if (existing && existing.confirmado) {
@@ -457,7 +464,7 @@
 
         await resolveGuestData();
         if (guestData.tipo === 'grupo' || guestData.tipo === 'group') {
-            fillGuestOptions(50);
+            fillGuestOptions(1);
             guestSelect.value = '1';
             guestSelect.disabled = true;
         } else {

@@ -311,7 +311,7 @@ const GuestConfig = {
         "22": { nombre: "Jose Carlo Rivas", pases: 1 },
         "23": { nombre: "Josseline Rodríguez", pases: 1 },
         "24": { nombre: "Kelvin Gerardo Anaya Lopez", pases: 1 },
-        "G50": { nombre: "Invitación grupal abierta", pases: 1, tipo: "grupo", solicitaNombre: true, pasesDisponibles: 50 }
+        "G50": { nombre: "Invitación grupal abierta", pases: 1, tipo: "grupo", solicitaNombre: true, pasesDisponibles: 100 }
     },
     invitadoDefault: { nombre: "Invitado Especial", pases: 2 },
     paramId: 'id'
@@ -412,9 +412,13 @@ const InvitadoApp = {
         const lugaresEl = document.querySelector('.invitado-lugares');
         const portadaLugaresEl = document.querySelector('.portada-sobre-lugares');
         const portadaNumeroEl = document.getElementById('portada-numero-lugares');
-        const totalPases = Math.max(1, Number(pases) || 1);
+        const isGroupOpenLink = this.data && String(this.data.id || '').trim().toUpperCase() === 'G50';
+        const totalPases = isGroupOpenLink ? 1 : Math.max(1, Number(pases) || 1);
 
         if (portadaLugaresEl) {
+            if (isGroupOpenLink) {
+                portadaLugaresEl.textContent = '1 lugar especial para ti';
+            } else {
             const numeroPortadaEl = portadaNumeroEl || document.createElement('span');
             numeroPortadaEl.id = 'portada-numero-lugares';
             numeroPortadaEl.textContent = String(totalPases);
@@ -422,6 +426,7 @@ const InvitadoApp = {
                 numeroPortadaEl,
                 document.createTextNode(totalPases === 1 ? ' lugar en su honor' : ' lugares en su honor')
             );
+            }
         }
 
         if (!lugaresEl) return;
